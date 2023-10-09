@@ -1,0 +1,10 @@
+{
+  "watch": ["src", "../api/dist"],
+  "ext": "ts",
+  "ignore": [],
+  "exec": "npm run build && homebridge -I -D",
+  "signal": "SIGTERM",
+  "env": {
+    "NODE_OPTIONS": "--trace-warnings"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@hb-haier/api",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@hb-haier/utils": "0.0.0",
+    "axios": "^1.5.1",
+    "date-fns": "^2.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.20",
+    "typescript": "^5.2.2"
+  }
+}

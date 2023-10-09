@@ -1,0 +1,46 @@
+{
+  "name": "homebridge-plugin-haier",
+  "private": false,
+  "displayName": "Haier",
+  "version": "0.0.0",
+  "description": "海尔智家 Homebridge 插件",
+  "scripts": {
+    "postinstall": "node ./scripts/postinstall.js",
+    "build": "rimraf ./dist && tsc",
+    "watch": "nodemon"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/baranwang/homebridge-plugin-haier.git"
+  },
+  "bugs": {
+    "url": "https://github.com/baranwang/homebridge-plugin-haier/issues"
+  },
+  "engines": {
+    "node": "^18.17.0",
+    "homebridge": "^1.6.0"
+  },
+  "main": "dist/index.js",
+  "keywords": [
+    "homebridge-plugin",
+    "haier",
+    "海尔"
+  ],
+  "dependencies": {
+    "@hb-haier/api": "0.0.0",
+    "@hb-haier/shared": "0.0.0",
+    "@hb-haier/ui-renderer": "0.0.0",
+    "@hb-haier/ui-server": "0.0.0",
+    "@hb-haier/utils": "0.0.0"
+  },
+  "devDependencies": {
+    "@modern-js/module-tools": "2.35.1",
+    "@types/node": "^18.16.20",
+    "homebridge": "^1.6.1",
+    "homebridge-config-ui-x": "^4.50.6",
+    "nodemon": "^3.0.1",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}

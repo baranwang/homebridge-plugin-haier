@@ -1,0 +1,7 @@
+{
+  "pluginAlias": "HaierHomebridgePlugin",
+  "pluginType": "platform",
+  "singular": true,
+  "customUi": true,
+  "customUiPath": "./homebridge-ui"
+}

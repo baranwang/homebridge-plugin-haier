@@ -1,0 +1,24 @@
+{
+  "name": "@hb-haier/utils",
+  "version": "0.0.0",
+  "types": "./dist/types/index.d.ts",
+  "main": "./dist/lib/index.js",
+  "module": "./dist/es/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "modern build",
+    "watch": "modern build -w"
+  },
+  "devDependencies": {
+    "@modern-js/module-tools": "^2.13.2",
+    "@types/node": "^18.16.20",
+    "axios": "^1.5.1",
+    "typescript": "^5.2.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
