@@ -21,7 +21,7 @@ jobs:
 
       - run: npx lerna run build
 
-      - run: npx lerna publish --yes --no-verfiy-access
+      - run: npx lerna publish --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
