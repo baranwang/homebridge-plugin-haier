@@ -6,6 +6,9 @@ module.exports = {
   entry: {
     main: './src/main.tsx',
   },
+  output: {
+    clean: true,
+  },
   builtins: {
     html: [
       {
