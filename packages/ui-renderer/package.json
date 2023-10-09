@@ -1,6 +1,6 @@
 {
   "name": "@hb-haier/ui-renderer",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "scripts": {
     "build": "rspack build",
     "watch": "rspack build --watch"
@@ -9,7 +9,7 @@
     "dist"
   ],
   "dependencies": {
-    "@hb-haier/shared": "^0.0.2",
+    "@hb-haier/shared": "^0.0.3",
     "ahooks": "^3.7.8",
     "rc-field-form": "^1.38.2",
     "react": "^18.2.0",
@@ -17,7 +17,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@hb-haier/api": "^0.0.2",
+    "@hb-haier/api": "^0.0.3",
     "@homebridge/plugin-ui-utils": "^0.1.0",
     "@rspack/cli": "^0.3.6",
     "@types/react": "^18.2.25",
