@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  create-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -27,7 +27,7 @@ jobs:
       - run: npx lerna version --yes --conventional-commits --exact
 
       - id: version
-        run: echo "$(node -e 'process.stdout.write(`::set-output version=${require("./lerna.json").version}`)')"
+        run: node -e 'process.stdout.write(`version=${require("./lerna.json").version}`)' >> "$GITHUB_OUTPUT"
 
       - run: gh pr create --base main --title "Release ${{ steps.version.outputs.version }}" --body "Release ${{ steps.version.outputs.version }}"
         env:
