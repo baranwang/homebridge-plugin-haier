@@ -1,5 +1,5 @@
 {
-  "name": "homebridge-plugin-haier",
+  "name": "@hb-haier/plugin",
   "private": false,
   "displayName": "Haier",
   "version": "0.1.0",

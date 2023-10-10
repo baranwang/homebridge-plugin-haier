@@ -86,3 +86,7 @@ export interface DeviceExtendedInfo {
   twoGroupingName: string;
   appletProxAuth: number;
 }
+
+export interface GetFamilyDevicesResponse {
+  deviceinfos: DeviceInfo[];
+}

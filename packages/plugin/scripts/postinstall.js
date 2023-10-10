@@ -3,10 +3,7 @@ const path = require('path');
 
 const pluginPath = path.resolve(__dirname, '../');
 const uiPath = path.resolve(pluginPath, 'homebridge-ui');
-const rendererPath = path.resolve(
-  path.dirname(require.resolve('@hb-haier/ui-renderer/package.json')),
-  'dist',
-);
+const rendererPath = path.resolve(path.dirname(require.resolve('@hb-haier/ui-renderer/package.json')), 'dist');
 const serverPath = path.resolve(
   path.dirname(require.resolve('@hb-haier/ui-server/package.json')),
   require('@hb-haier/ui-server/package.json').main,

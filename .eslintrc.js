@@ -7,6 +7,7 @@ module.exports = {
   rules: {
     'no-param-reassign': 'off',
     'new-cap': 'off',
+    'no-new': 'off',
     'no-implicit-coercion': 'off',
     '@typescript-eslint/typedef': 'off',
     '@typescript-eslint/no-parameter-properties': 'off',
