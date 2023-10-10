@@ -20,6 +20,7 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git checkout -b release/${{ github.sha }}
+          git push --set-upstream origin release/${{ github.sha }}
 
       - run: npm ci
 
