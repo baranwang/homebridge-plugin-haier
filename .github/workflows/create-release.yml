@@ -27,14 +27,6 @@ jobs:
       - run: npx lerna version --yes --conventional-commits --exact
 
       - id: version
-        run: node -e 'process.stdout.write(`::set-output version=${require("./lerna.json").version}`)' 
+        run: echo "$(node -e 'process.stdout.write(`::set-output version=${require("./lerna.json").version}`)')"
 
-      - uses: peter-evans/create-pull-request@v5
-        with:
-          branch: release/${{ github.sha }}
-          base: main
-          title: Release ${{ steps.version.outputs.version }}
-          body: |
-            Release ${{ steps.version.outputs.version }}
-        
-        
+      - run: gh pr create --base main --title "Release ${{ steps.version.outputs.version }}" --body "Release ${{ steps.version.outputs.version }}"
