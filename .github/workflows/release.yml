@@ -19,10 +19,11 @@ jobs:
       - run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -b release/${{ github.sha }}
 
       - run: npm ci
 
-      - run: npx lerna version --yes --conventional-commits --exact --git-remote release/${{ github.sha }}
+      - run: npx lerna version --yes --conventional-commits --exact
 
       - uses: peter-evans/create-pull-request@v5
         
