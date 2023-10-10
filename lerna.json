@@ -4,7 +4,7 @@
   "packages": ["packages/*"],
   "command": {
     "version": {
-      "allowBranch": ["main"],
+      "allowBranch": ["main", "release/*"],
       "message": "chore(release): publish %s"
     }
   }
