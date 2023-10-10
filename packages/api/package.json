@@ -1,6 +1,6 @@
 {
   "name": "@hb-haier/api",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -11,7 +11,7 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@hb-haier/utils": "^0.0.3",
+    "@hb-haier/utils": "0.1.0",
     "axios": "^1.5.1",
     "date-fns": "^2.30.0"
   },
