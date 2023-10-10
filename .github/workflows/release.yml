@@ -1,11 +1,7 @@
-name: Auto Release
+name: Create Release
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '**/package*.json'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,12 +14,15 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: npm
+
+      - run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
       - run: npm ci
 
-      - run: npx lerna run build
+      - run: npx lerna version --yes --conventional-commits --exact --git-remote release/${{ github.sha }}
 
-      - run: npx lerna publish --yes
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
+      - uses: peter-evans/create-pull-request@v5
+        
