@@ -30,3 +30,5 @@ jobs:
         run: echo "$(node -e 'process.stdout.write(`::set-output version=${require("./lerna.json").version}`)')"
 
       - run: gh pr create --base main --title "Release ${{ steps.version.outputs.version }}" --body "Release ${{ steps.version.outputs.version }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
