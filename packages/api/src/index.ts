@@ -14,6 +14,7 @@ import type {
   TokenInfo,
 } from './types';
 import type { AxiosInstance } from 'axios';
+import type { API } from 'homebridge';
 import type { io } from 'socket.io-client';
 
 export * from './types';
@@ -43,7 +44,7 @@ export class HaierApi {
 
   // lastHeartbeatAt = Date.now();
 
-  constructor(readonly config: HaierApiConfig) {
+  constructor(readonly config: HaierApiConfig, readonly api?: API) {
     this.getTokenInfo();
 
     this.axios = axios.create({
@@ -70,7 +71,7 @@ export class HaierApi {
       const body = config.data ? JSON.stringify(config.data) : '';
       const signStr = `${url.pathname}${url.search}${body}${APP_ID}${APP_KEY}${timestamp}`;
       config.headers.sign = sha256(signStr);
-      this.logger.info('request', url.toString(), JSON.stringify(config.data));
+      this.logger.debug('request:', url.toString(), JSON.stringify(config.data));
       return config;
     });
     this.axios.interceptors.response.use(
@@ -137,10 +138,12 @@ export class HaierApi {
   }
 
   get tokenPath() {
-    const tokenDir = path.resolve(path.dirname(__dirname), '.hb-haier/token');
+    const storagePath = this.api?.user.storagePath() ?? path.dirname(__dirname);
+    const tokenDir = path.resolve(storagePath, '.hb-haier/token');
     if (!fs.existsSync(tokenDir)) {
       fs.mkdirSync(tokenDir, { recursive: true });
     }
+    console.log('tokenDir', tokenDir);
     return path.resolve(tokenDir, `${this.config.username}.json`);
   }
 
@@ -165,6 +168,12 @@ export class HaierApi {
         url.searchParams.set('clientId', CLIENT_ID);
         return url.toString();
       });
+  }
+
+  public async connectWss() {
+    this.getWssUrl().then(url => {
+      console.log('// TODO', url);
+    });
   }
 
   wsMessageSender(topic: string, content: Record<string, unknown>) {
