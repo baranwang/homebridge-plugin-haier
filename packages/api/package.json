@@ -1,0 +1,31 @@
+{
+  "name": "@hb-haier/api",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@hb-haier/utils": "0.0.0",
+    "axios": "^1.5.1",
+    "homebridge": "^1.6.1",
+    "socket.io-client": "^4.7.2",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.20",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

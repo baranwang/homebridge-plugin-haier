@@ -1,0 +1,16 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "build": "lerna run build"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@modern-js/eslint-config": "^2.35.1",
+    "eslint-plugin-import": "^2.28.1",
+    "lerna": "^7.3.0",
+    "prettier": "^2.8.8"
+  }
+}
