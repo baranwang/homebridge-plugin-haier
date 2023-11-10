@@ -16,74 +16,97 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
 
   public haierApi!: HaierApi;
 
+  private discoveryInterval?: NodeJS.Timeout;
+
   constructor(public readonly log: Logger, public readonly config: PlatformConfig, public readonly api: API) {
-    this.log.debug('Finished initializing platform:', this.config.name);
+    this.log.debug('平台初始化完成', this.config.name);
 
     this.api.on('didFinishLaunching', () => {
-      log.debug('Executed didFinishLaunching callback');
-      this.haierApi = new HaierApi(config as unknown as HaierApiConfig);
-      this.haierApi.getWssUrl();
+      this.log.debug('Executed didFinishLaunching callback');
+      this.haierApi = new HaierApi(config as unknown as HaierApiConfig, api);
+      // this.haierApi.connectWss();
       this.discoverDevices();
+      this.discoveryInterval = setInterval(() => this.discoverDevices(), 2 * 60 * 1000);
+    });
+
+    this.api.on('shutdown', () => {
+      this.log.debug('Executed shutdown callback');
+      this.discoveryInterval && clearInterval(this.discoveryInterval);
     });
   }
 
   configureAccessory(accessory: HaierPlatformAccessory) {
-    this.log.info('Loading accessory from cache:', accessory.displayName);
+    this.log.info('从缓存加载附件：', accessory.displayName);
     this.accessories.push(accessory);
   }
 
-  getAccessoryClass(deviceInfo: DeviceInfo) {
+  discoverDevices() {
+    const { familyId } = this.config;
+
+    if (!familyId) {
+      this.log.error('请在 config.json 中配置 familyId');
+      return;
+    }
+
+    this.haierApi.getDevicesByFamilyId(familyId).then(devices => {
+      devices.forEach(device => this.handleDevice(device));
+    });
+  }
+
+  private handleDevice(device: DeviceInfo) {
+    if (this.isDeviceIneligible(device)) {
+      return;
+    }
+
+    const AccessoryClass = this.getAccessoryClass(device);
+    if (!AccessoryClass) {
+      this.log.warn(
+        '设备',
+        device.baseInfo.deviceName,
+        '暂不支持，可提交 issue 申请支持',
+        require('../package.json').bugs.url,
+      );
+      return;
+    }
+    const uuid = this.api.hap.uuid.generate(device.baseInfo.deviceId);
+    const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+    if (existingAccessory) {
+      this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+      existingAccessory.context = {
+        deviceInfo: device,
+      };
+      this.api.updatePlatformAccessories([existingAccessory]);
+      new AccessoryClass(this, existingAccessory);
+    } else {
+      this.log.info('Adding new accessory:', device.baseInfo.deviceName);
+      const accessory = new this.api.platformAccessory<HaierPlatformAccessoryContext>(device.baseInfo.deviceName, uuid);
+      accessory.context = {
+        deviceInfo: device,
+      };
+      new AccessoryClass(this, accessory);
+      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+    }
+  }
+
+  private isDeviceIneligible(device: DeviceInfo): boolean {
+    if (!device.baseInfo.permission.auth.control) {
+      this.log.warn('设备', device.baseInfo.deviceName, '没有控制权限');
+      return true;
+    }
+    if (!device.extendedInfo.bindType) {
+      this.log.warn('设备', device.baseInfo.deviceName, '不支持云端控制');
+      return true;
+    }
+    return false;
+  }
+
+  private getAccessoryClass(deviceInfo: DeviceInfo) {
     switch (deviceInfo.extendedInfo.categoryGrouping) {
       case '空调':
         return AirConditionerAccessory;
 
       default:
         return undefined;
-    }
-  }
-
-  async discoverDevices() {
-    const { familyId } = this.config;
-    if (!familyId) {
-      this.log.error('Please set familyId in config.json');
-      return;
-    }
-    const devices = await this.haierApi.getDevicesByFamilyId(familyId);
-    for (const device of devices) {
-      if (!device.baseInfo.permission.auth.control) {
-        this.log.warn('Device', device.baseInfo.deviceName, 'does not have control permission');
-        continue;
-      }
-      if (!device.extendedInfo.bindType) {
-        this.log.warn('Device', device.baseInfo.deviceName, 'does not support control via cloud');
-        continue;
-      }
-      const AccessoryClass = this.getAccessoryClass(device);
-      if (!AccessoryClass) {
-        this.log.warn('Device', device.baseInfo.deviceName, 'does not have a corresponding accessory class');
-        continue;
-      }
-      const uuid = this.api.hap.uuid.generate(device.baseInfo.deviceId);
-      const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
-      if (existingAccessory) {
-        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
-        existingAccessory.context = {
-          deviceInfo: device,
-        };
-        this.api.updatePlatformAccessories([existingAccessory]);
-        new AccessoryClass(this, existingAccessory);
-      } else {
-        this.log.info('Adding new accessory:', device.baseInfo.deviceName);
-        const accessory = new this.api.platformAccessory<HaierPlatformAccessoryContext>(
-          device.baseInfo.deviceName,
-          uuid,
-        );
-        accessory.context = {
-          deviceInfo: device,
-        };
-        new AccessoryClass(this, accessory);
-        this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-      }
     }
   }
 }

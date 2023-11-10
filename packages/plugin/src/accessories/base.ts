@@ -33,11 +33,17 @@ export class BaseAccessory {
   }
 
   protected async getDevDigitalModel() {
+    const { deviceId, isOnline } = this.accessory.context.deviceInfo.baseInfo;
+    // TODO: 待测试
+    if (!isOnline) {
+      this.accessory
+        .getService(this.platform.Service.AccessoryInformation)!
+        .getCharacteristic(this.platform.Characteristic.Model)
+        .updateValue(new Error(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE as any));
+    }
     try {
       if (!this.devDigitalModelPromise) {
-        this.devDigitalModelPromise = this.platform.haierApi.getDevDigitalModel(
-          this.accessory.context.deviceInfo.baseInfo.deviceId,
-        );
+        this.devDigitalModelPromise = this.platform.haierApi.getDevDigitalModel(deviceId);
       }
       const devDigitalModel = await this.devDigitalModelPromise;
       this.accessory.context.devDigitalModel = devDigitalModel;
