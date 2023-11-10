@@ -5,6 +5,7 @@ import { URL } from 'url';
 import { HttpError, getSn, sha256 } from '@hb-haier/utils';
 import axios from 'axios';
 import { Logger } from 'homebridge/lib/logger';
+import { v4 as uuid } from 'uuid';
 
 import type {
   DevDigitalModel,
@@ -15,7 +16,6 @@ import type {
 } from './types';
 import type { AxiosInstance } from 'axios';
 import type { API } from 'homebridge';
-import type { io } from 'socket.io-client';
 
 export * from './types';
 
@@ -25,7 +25,6 @@ const APP_KEY = '5dfca8714eb26e3a776e58a8273c8752';
 // const APP_KEY = '79ce99cc7f9804663939676031b8a427';
 const APP_VERSION = '7.19.2';
 // const APP_SECRET = 'E46602789309498CEEDAACB585B00F40';
-const CLIENT_ID = 'CCD4B90C-E195-4A9B-9F71-15A92AA1DE87';
 const LOGIN_URL = '/oauthserver/account/v1/login';
 
 export interface HaierApiConfig {
@@ -40,9 +39,29 @@ export class HaierApi {
 
   logger = new Logger('HaierApi');
 
-  socket!: ReturnType<typeof io>;
+  get storagePath() {
+    return path.resolve(this.api?.user.storagePath() ?? path.dirname(__dirname), '.hb-haier');
+  }
 
-  // lastHeartbeatAt = Date.now();
+  get tokenPath() {
+    const tokenDir = path.resolve(this.storagePath, 'token');
+    if (!fs.existsSync(tokenDir)) {
+      fs.mkdirSync(tokenDir, { recursive: true });
+    }
+    return path.resolve(tokenDir, `${this.config.username}.json`);
+  }
+
+  get clientId() {
+    const cacheClientIdPath = path.resolve(this.storagePath, 'client-id');
+    if (fs.existsSync(cacheClientIdPath)) {
+      return fs.readFileSync(cacheClientIdPath, 'utf-8');
+    }
+    const clientId = uuid();
+    fs.writeFileSync(cacheClientIdPath, clientId);
+    // 如果 clientId 变了，那么 token 也要重新获取
+    this.tokenInfo = undefined;
+    return clientId;
+  }
 
   constructor(readonly config: HaierApiConfig, readonly api?: API) {
     this.getTokenInfo();
@@ -50,13 +69,12 @@ export class HaierApi {
     this.axios = axios.create({
       baseURL: 'https://zj.haier.net',
       headers: {
-        Accept: '*/*',
         appId: APP_ID,
         appKey: APP_KEY,
         appVersion: APP_VERSION,
-        clientId: CLIENT_ID,
+        clientId: this.clientId,
         language: 'zh-cn',
-        timezone: '+8',
+        timezone: '8',
         'User-Agent': `Uplus/${APP_VERSION} (iPhone; iOS 17.0.2; Scale/2.00)`,
       },
     });
@@ -116,7 +134,7 @@ export class HaierApi {
 
   async getDevDigitalModel(deviceId: string) {
     return this.axios
-      .post<{ detailInfo: string }>('https://uws.haier.net/shadow/v1/devdigitalmodels', {
+      .post<{ detailInfo: Record<string, string> }>('https://uws.haier.net/shadow/v1/devdigitalmodels', {
         deviceInfoList: [{ deviceId }],
       })
       .then(res => {
@@ -137,16 +155,6 @@ export class HaierApi {
     });
   }
 
-  get tokenPath() {
-    const storagePath = this.api?.user.storagePath() ?? path.dirname(__dirname);
-    const tokenDir = path.resolve(storagePath, '.hb-haier/token');
-    if (!fs.existsSync(tokenDir)) {
-      fs.mkdirSync(tokenDir, { recursive: true });
-    }
-    console.log('tokenDir', tokenDir);
-    return path.resolve(tokenDir, `${this.config.username}.json`);
-  }
-
   /**
    * 获取 websocket 地址，
    * 但是 token 的问题还没解决
@@ -165,7 +173,7 @@ export class HaierApi {
         url.protocol = 'wss:';
         url.pathname = '/userag';
         url.searchParams.set('token', accessToken);
-        url.searchParams.set('clientId', CLIENT_ID);
+        url.searchParams.set('clientId', this.clientId);
         return url.toString();
       });
   }
@@ -176,16 +184,16 @@ export class HaierApi {
     });
   }
 
-  wsMessageSender(topic: string, content: Record<string, unknown>) {
-    this.socket.send(
-      JSON.stringify({
-        topic,
-        content,
-        agClientId: this.tokenInfo?.uhomeAccessToken,
-      }),
-    );
-    this.logger.info('ws send', topic, content);
-  }
+  // wsMessageSender(topic: string, content: Record<string, unknown>) {
+  //   this.socket.send(
+  //     JSON.stringify({
+  //       topic,
+  //       content,
+  //       agClientId: this.tokenInfo?.uhomeAccessToken,
+  //     }),
+  //   );
+  //   this.logger.info('ws send', topic, content);
+  // }
 
   private setTokenInfo() {
     fs.writeFileSync(this.tokenPath, JSON.stringify(this.tokenInfo));
