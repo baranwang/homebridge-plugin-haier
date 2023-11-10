@@ -1,6 +1,6 @@
 {
   "name": "@hb-haier/api",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -11,7 +11,7 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@hb-haier/utils": "1.1.0",
+    "@hb-haier/utils": "1.2.0",
     "axios": "^1.5.1",
     "homebridge": "^1.6.1",
     "uuid": "^9.0.1"

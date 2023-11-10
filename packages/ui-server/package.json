@@ -1,6 +1,6 @@
 {
   "name": "@hb-haier/ui-server",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "files": [
@@ -11,7 +11,7 @@
     "build:watch": "modern build -w"
   },
   "dependencies": {
-    "@hb-haier/api": "1.1.0",
+    "@hb-haier/api": "1.2.0",
     "@homebridge/plugin-ui-utils": "^0.1.0"
   },
   "devDependencies": {
