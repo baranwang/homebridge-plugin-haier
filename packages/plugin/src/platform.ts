@@ -1,10 +1,9 @@
-import { HaierApi } from '@hb-haier/api';
-import { PLATFORM_NAME, PLUGIN_NAME } from '@hb-haier/shared';
+import { HaierApi, PLATFORM_NAME, PLUGIN_NAME } from '@hb-haier/shared';
 
 import { AirConditionerAccessory } from './accessories';
 
 import type { HaierPlatformAccessory, HaierPlatformAccessoryContext } from './types';
-import type { DeviceInfo, HaierApiConfig } from '@hb-haier/api';
+import type { DeviceInfo, HaierApiConfig } from '@hb-haier/shared';
 import type { API, Characteristic, DynamicPlatformPlugin, Logger, PlatformConfig, Service } from 'homebridge';
 
 export class HaierHomebridgePlatform implements DynamicPlatformPlugin {

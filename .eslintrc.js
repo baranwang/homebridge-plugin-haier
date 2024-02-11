@@ -45,4 +45,12 @@ module.exports = {
       },
     ],
   },
+  overrides: [
+    {
+      files: ['*.d.ts'],
+      rules: {
+        'spaced-comment': 'off',
+      },
+    },
+  ],
 };

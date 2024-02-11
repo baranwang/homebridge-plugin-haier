@@ -1,7 +1,7 @@
-import { HaierApi } from '@hb-haier/api';
+import { HaierApi } from '@hb-haier/shared';
 import { HomebridgePluginUiServer } from '@homebridge/plugin-ui-utils';
 
-import type { HaierApiConfig } from '@hb-haier/api';
+import type { HaierApiConfig } from '@hb-haier/shared';
 
 class UiServer extends HomebridgePluginUiServer {
   constructor() {

@@ -1,6 +1,6 @@
 import type { HaierHomebridgePlatform } from '../platform';
 import type { HaierPlatformAccessory } from '../types';
-import type { DevDigitalModel } from '@hb-haier/api';
+import type { DevDigitalModel } from '@hb-haier/shared';
 import type { Service } from 'homebridge';
 
 export class BaseAccessory {

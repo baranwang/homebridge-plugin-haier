@@ -1,11 +1,12 @@
+import { randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { URL } from 'url';
 
-import { HttpError, getSn, sha256 } from '@hb-haier/utils';
 import axios from 'axios';
 import { Logger } from 'homebridge/lib/logger';
-import { v4 as uuid } from 'uuid';
+
+import { HttpError, getSn, sha256 } from '../utils';
 
 import type {
   DevDigitalModel,
@@ -56,7 +57,7 @@ export class HaierApi {
     if (fs.existsSync(cacheClientIdPath)) {
       return fs.readFileSync(cacheClientIdPath, 'utf-8');
     }
-    const clientId = uuid();
+    const clientId = randomUUID();
     fs.writeFileSync(cacheClientIdPath, clientId);
     // 如果 clientId 变了，那么 token 也要重新获取
     this.tokenInfo = undefined;
@@ -159,30 +160,30 @@ export class HaierApi {
    * 获取 websocket 地址，
    * 但是 token 的问题还没解决
    */
-  async getWssUrl() {
-    const accessToken = await this.getAccessToken();
-    return this.axios
-      .post<{
-        agAddr: string;
-      }>('https://uws.haier.net/gmsWS/wsag/assign', {
-        token: accessToken,
-        clientId: `iOS1702${Date.now()}`,
-      })
-      .then(res => {
-        const url = new URL(res.data.agAddr);
-        url.protocol = 'wss:';
-        url.pathname = '/userag';
-        url.searchParams.set('token', accessToken);
-        url.searchParams.set('clientId', this.clientId);
-        return url.toString();
-      });
-  }
+  // async getWssUrl() {
+  //   const accessToken = await this.getAccessToken();
+  //   return this.axios
+  //     .post<{
+  //       agAddr: string;
+  //     }>('https://uws.haier.net/gmsWS/wsag/assign', {
+  //       token: accessToken,
+  //       clientId: `iOS1702${Date.now()}`,
+  //     })
+  //     .then(res => {
+  //       const url = new URL(res.data.agAddr);
+  //       url.protocol = 'wss:';
+  //       url.pathname = '/userag';
+  //       url.searchParams.set('token', accessToken);
+  //       url.searchParams.set('clientId', this.clientId);
+  //       return url.toString();
+  //     });
+  // }
 
-  public async connectWss() {
-    this.getWssUrl().then(url => {
-      console.log('// TODO', url);
-    });
-  }
+  // public async connectWss() {
+  //   this.getWssUrl().then(url => {
+  //     console.log('// TODO', url);
+  //   });
+  // }
 
   // wsMessageSender(topic: string, content: Record<string, unknown>) {
   //   this.socket.send(

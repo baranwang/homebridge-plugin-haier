@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 
-import { PLATFORM_NAME } from '@hb-haier/shared';
+import { PLATFORM_NAME } from '@hb-haier/shared/dist/constants';
 import { useRequest } from 'ahooks';
 import RcForm from 'rc-field-form';
 import { Form } from 'react-bootstrap';
 
 import { FormField } from './components/form-field';
 
-import type { HaierApi } from '@hb-haier/api';
+import type { HaierApi } from '@hb-haier/shared';
 
 function App() {
   const { data: i18n } = useRequest(() => window.homebridge.i18nGetTranslation());

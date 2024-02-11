@@ -2,27 +2,25 @@
   "name": "@hb-haier/ui-renderer",
   "version": "1.2.2",
   "scripts": {
-    "build": "rspack build",
-    "watch": "rspack build --watch"
+    "dev": "rsbuild dev --open",
+    "build": "rsbuild build",
+    "preview": "rsbuild preview"
   },
-  "files": [
-    "dist"
-  ],
   "dependencies": {
-    "@hb-haier/shared": "1.2.2",
-    "ahooks": "^3.7.8",
-    "rc-field-form": "^1.38.2",
+    "@hb-haier/shared": "^1.2.2",
+    "ahooks": "^3.7.10",
+    "rc-field-form": "^1.41.0",
     "react": "^18.2.0",
-    "react-bootstrap": "^2.9.0",
+    "react-bootstrap": "^2.10.1",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@hb-haier/api": "1.2.2",
-    "@homebridge/plugin-ui-utils": "^0.1.0",
-    "@rspack/cli": "^0.3.6",
-    "@types/react": "^18.2.25",
-    "@types/react-dom": "^18.2.11",
-    "typescript": "^5.2.2"
+    "@homebridge/plugin-ui-utils": "^1.0.1",
+    "@rsbuild/core": "^0.4.1",
+    "@rsbuild/plugin-react": "^0.4.1",
+    "@types/react": "^18.2.47",
+    "@types/react-dom": "^18.2.18",
+    "typescript": "^5.3.0"
   },
   "publishConfig": {
     "access": "public",

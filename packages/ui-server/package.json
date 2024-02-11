@@ -11,11 +11,11 @@
     "build:watch": "modern build -w"
   },
   "dependencies": {
-    "@hb-haier/api": "1.2.2",
+    "@hb-haier/shared": "1.2.2",
     "@homebridge/plugin-ui-utils": "^0.1.0"
   },
   "devDependencies": {
-    "@modern-js/module-tools": "2.35.1",
+    "@modern-js/module-tools": "2.46.1",
     "@types/node": "^18.16.20",
     "typescript": "^5.2.2"
   },

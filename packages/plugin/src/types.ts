@@ -1,4 +1,4 @@
-import type { DevDigitalModel, DeviceInfo } from '@hb-haier/api';
+import type { DevDigitalModel, DeviceInfo } from '@hb-haier/shared';
 import type { PlatformAccessory } from 'homebridge';
 
 export type HaierPlatformAccessory = PlatformAccessory<HaierPlatformAccessoryContext>;
