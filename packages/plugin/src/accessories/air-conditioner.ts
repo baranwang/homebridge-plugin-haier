@@ -132,7 +132,7 @@ export class AirConditionerAccessory extends BaseAccessory {
     };
     const operationMode = modeMap[value as number];
     if (operationMode) {
-      await this.sendCommands({ operationMode });
+      await this.sendCommands({ onOffStatus: 'true' }, { operationMode });
       return;
     }
     this.platform.log.warn('Unsupported TargetHeatingCoolingState:', value);

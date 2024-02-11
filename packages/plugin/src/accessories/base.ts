@@ -34,12 +34,8 @@ export class BaseAccessory {
 
   protected async getDevDigitalModel() {
     const { deviceId, isOnline } = this.accessory.context.deviceInfo.baseInfo;
-    // TODO: 待测试
     if (!isOnline) {
-      this.accessory
-        .getService(this.platform.Service.AccessoryInformation)!
-        .getCharacteristic(this.platform.Characteristic.Model)
-        .updateValue(new Error(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE as any));
+      this.platform.log.warn('设备', this.accessory.displayName, '离线');
     }
     try {
       if (!this.devDigitalModelPromise) {
