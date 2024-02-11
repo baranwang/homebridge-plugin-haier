@@ -2,7 +2,7 @@
   "name": "@hb-haier/homebridge-plugin",
   "private": false,
   "displayName": "Haier",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "海尔智家 Homebridge 插件",
   "scripts": {
     "postinstall": "node ./scripts/postinstall.js",
@@ -27,11 +27,11 @@
     "海尔"
   ],
   "dependencies": {
-    "@hb-haier/api": "1.2.1",
-    "@hb-haier/shared": "1.2.1",
-    "@hb-haier/ui-renderer": "1.2.1",
-    "@hb-haier/ui-server": "1.2.1",
-    "@hb-haier/utils": "1.2.1"
+    "@hb-haier/api": "1.2.2",
+    "@hb-haier/shared": "1.2.2",
+    "@hb-haier/ui-renderer": "1.2.2",
+    "@hb-haier/ui-server": "1.2.2",
+    "@hb-haier/utils": "1.2.2"
   },
   "devDependencies": {
     "@modern-js/module-tools": "2.35.1",
