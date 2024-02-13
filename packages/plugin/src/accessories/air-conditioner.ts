@@ -9,9 +9,9 @@ export class AirConditionerAccessory extends BaseAccessory {
   }
 
   async init() {
-    await this.getDevDigitalModel();
-
     this.generateServices([this.platform.Service.Thermostat]);
+
+    await this.getDevDigitalModel();
 
     const {
       CurrentHeatingCoolingState,
@@ -51,7 +51,7 @@ export class AirConditionerAccessory extends BaseAccessory {
   }
 
   onDevDigitalModelUpdate() {
-    this.services[0].getCharacteristic(this.Characteristic.TargetTemperature).setProps(this.targetTemperatureProps);
+    this.services[0]?.getCharacteristic(this.Characteristic.TargetTemperature).setProps(this.targetTemperatureProps);
   }
 
   private get targetTemperatureProps(): Partial<CharacteristicProps> {
