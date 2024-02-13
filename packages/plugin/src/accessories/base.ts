@@ -46,6 +46,7 @@ export class BaseAccessory {
       this.onDevDigitalModelUpdate();
       return devDigitalModel;
     } catch (error) {
+      this.platform.log.error('获取设备数据失败', error);
       return this.accessory.context.devDigitalModel;
     } finally {
       this.devDigitalModelPromise = undefined;

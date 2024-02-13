@@ -17,7 +17,11 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
 
   private discoveryInterval?: NodeJS.Timeout;
 
-  constructor(public readonly log: Logger, public readonly config: PlatformConfig, public readonly api: API) {
+  constructor(
+    public readonly log: Logger,
+    public readonly config: PlatformConfig,
+    public readonly api: API,
+  ) {
     this.log.debug('平台初始化完成', this.config.name);
 
     this.api.on('didFinishLaunching', () => {
@@ -40,15 +44,18 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
   }
 
   discoverDevices() {
-    const { familyId } = this.config;
-
+    const { familyId, disabledDevices = [] } = this.config;
     if (!familyId) {
       this.log.error('请在 config.json 中配置 familyId');
       return;
     }
 
     this.haierApi.getDevicesByFamilyId(familyId).then(devices => {
-      devices.forEach(device => this.handleDevice(device));
+      devices.forEach(device => {
+        if (!disabledDevices.includes(device.baseInfo.deviceId)) {
+          this.handleDevice(device);
+        }
+      });
     });
   }
 
@@ -77,8 +84,9 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
       this.api.updatePlatformAccessories([existingAccessory]);
       new AccessoryClass(this, existingAccessory);
     } else {
-      this.log.info('Adding new accessory:', device.baseInfo.deviceName);
-      const accessory = new this.api.platformAccessory<HaierPlatformAccessoryContext>(device.baseInfo.deviceName, uuid);
+      const displayName = this.getDeviceName(device);
+      this.log.info('Adding new accessory:', displayName);
+      const accessory = new this.api.platformAccessory<HaierPlatformAccessoryContext>(displayName, uuid);
       accessory.context = {
         deviceInfo: device,
       };
@@ -88,12 +96,13 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
   }
 
   private isDeviceIneligible(device: DeviceInfo): boolean {
+    const displayName = this.getDeviceName(device);
     if (!device.baseInfo.permission.auth.control) {
-      this.log.warn('设备', device.baseInfo.deviceName, '没有控制权限');
+      this.log.warn('设备', displayName, '没有控制权限');
       return true;
     }
     if (!device.extendedInfo.bindType) {
-      this.log.warn('设备', device.baseInfo.deviceName, '不支持云端控制');
+      this.log.warn('设备', displayName, '不支持云端控制');
       return true;
     }
     return false;
@@ -107,5 +116,9 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
       default:
         return undefined;
     }
+  }
+
+  private getDeviceName(device: DeviceInfo) {
+    return `${device.extendedInfo.room} - ${device.baseInfo.deviceName}`;
   }
 }
