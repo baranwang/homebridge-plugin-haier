@@ -4,7 +4,8 @@
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "dev": "modern build -w",

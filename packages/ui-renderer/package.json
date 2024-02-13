@@ -22,6 +22,10 @@
     "@types/react-dom": "^18.2.18",
     "typescript": "^5.3.0"
   },
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

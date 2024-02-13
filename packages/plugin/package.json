@@ -20,6 +20,12 @@
     "homebridge": "^1.6.0"
   },
   "main": "dist/index.js",
+  "files": [
+    "dist",
+    "scripts",
+    "config.schema.json",
+    "CHANGELOG.md"
+  ],
   "keywords": [
     "homebridge-plugin",
     "haier",
