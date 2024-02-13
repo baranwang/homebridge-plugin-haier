@@ -1,6 +1,6 @@
 {
   "name": "@hb-haier/shared",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "types": "./dist/types/index.d.ts",
   "main": "./dist/lib/index.js",
   "module": "./dist/es/index.js",
