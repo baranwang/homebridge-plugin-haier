@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.2](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.3.1...v1.3.2) (2024-02-13)
+
+### Bug Fixes
+
+- 自定义 UI 不显示的问题 ([792cf16](https://github.com/baranwang/homebridge-plugin-haier/commit/792cf162b6fb5867b2819d62760d4e42aa428080))
+
 ## [1.3.1](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.3.0...v1.3.1) (2024-02-13)
 
 **Note:** Version bump only for package @hb-haier/ui-renderer
