@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.2.3...v1.3.0) (2024-02-13)
+
+### Features
+
+- 新增支持过滤设备配置 ([7c824f7](https://github.com/baranwang/homebridge-plugin-haier/commit/7c824f7ca9211d9b11d927cfdc863f4c59b4ce21))
+
 ## [1.2.3](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.2.2...v1.2.3) (2024-02-11)
 
 **Note:** Version bump only for package @hb-haier/homebridge-plugin
