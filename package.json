@@ -1,8 +1,9 @@
 {
-  "name": "root",
+  "name": "hb-haier",
   "private": true,
   "scripts": {
-    "build": "lerna run build"
+    "build": "lerna run build",
+    "dev": "lerna watch -- lerna run build --scope=\\$LERNA_PACKAGE_NAME"
   },
   "workspaces": [
     "packages/*"

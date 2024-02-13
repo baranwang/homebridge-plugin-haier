@@ -90,7 +90,7 @@ export class HaierApi {
       const body = config.data ? JSON.stringify(config.data) : '';
       const signStr = `${url.pathname}${url.search}${body}${APP_ID}${APP_KEY}${timestamp}`;
       config.headers.sign = sha256(signStr);
-      this.logger.debug('request:', url.toString(), JSON.stringify(config.data));
+      this.logger.debug('request:', url.toString(), config.data ? JSON.stringify(config.data) : undefined);
       return config;
     });
     this.axios.interceptors.response.use(

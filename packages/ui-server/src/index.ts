@@ -4,18 +4,30 @@ import { HomebridgePluginUiServer } from '@homebridge/plugin-ui-utils';
 import type { HaierApiConfig } from '@hb-haier/shared';
 
 class UiServer extends HomebridgePluginUiServer {
+  haierApi!: HaierApi;
+
   constructor() {
     super();
 
-    this.onRequest('/family/list', this.getFamilyList.bind(this));
+    this.onRequest('/family', this.getFamilyList.bind(this));
+
+    this.onRequest('/device', this.getDevices.bind(this));
 
     this.ready();
   }
 
   async getFamilyList(payload: HaierApiConfig) {
-    const haierApi = new HaierApi(payload);
-    const familyList = haierApi.getFamilyList();
+    this.haierApi = new HaierApi(payload);
+    const familyList = this.haierApi.getFamilyList();
     return familyList;
+  }
+
+  async getDevices(payload: { familyId: string }) {
+    if (!this.haierApi) {
+      return Promise.resolve([]);
+    }
+    const devices = this.haierApi.getDevicesByFamilyId(payload.familyId);
+    return devices;
   }
 }
 

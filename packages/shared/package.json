@@ -4,22 +4,9 @@
   "types": "./dist/types/index.d.ts",
   "main": "./dist/lib/index.js",
   "module": "./dist/es/index.js",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "import": "./dist/es/index.js",
-      "require": "./dist/lib/index.js",
-      "types": "./dist/types/index.d.ts"
-    },
-    "./dist/*": {
-      "import": "./dist/es/*",
-      "require": "./dist/lib/*",
-      "types": "./dist/types/*"
-    }
-  },
   "scripts": {
-    "build": "modern build",
-    "build:watch": "modern build -w"
+    "dev": "modern build -w",
+    "build": "modern build"
   },
   "files": [
     "dist"

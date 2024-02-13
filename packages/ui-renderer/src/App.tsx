@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
 
-import { PLATFORM_NAME } from '@hb-haier/shared/dist/constants';
 import { useRequest } from 'ahooks';
 import RcForm from 'rc-field-form';
 import { Form } from 'react-bootstrap';
 
 import { FormField } from './components/form-field';
 
-import type { HaierApi } from '@hb-haier/shared';
+import { useFamilyList } from './hooks/use-family-list';
+import { useDevices } from './hooks/use-devices';
+
+import { Select } from './components/select';
 
 function App() {
   const { data: i18n } = useRequest(() => window.homebridge.i18nGetTranslation());
@@ -24,18 +26,12 @@ function App() {
   const username = RcForm.useWatch('username', form);
   const password = RcForm.useWatch('password', form);
 
-  const { data: familyList } = useRequest(
-    () => {
-      return window.homebridge.request('/family/list', { username, password }) as ReturnType<HaierApi['getFamilyList']>;
-    },
-    {
-      ready: !!username && !!password,
-      refreshDeps: [username, password],
-      debounceWait: 500,
-    },
-  );
+  const { familyList } = useFamilyList({ username, password });
+  const familyId = RcForm.useWatch('familyId', form);
+  const { devices } = useDevices(familyId);
 
   const handleValuesChange = (_: any, allValues: any) => {
+    console.log(allValues);
     const configs = pluginConfigs ? [...pluginConfigs] : [];
     configs[0] = allValues;
     window.homebridge.updatePluginConfig(configs);
@@ -43,7 +39,7 @@ function App() {
 
   return (
     <RcForm form={form} onValuesChange={handleValuesChange}>
-      <FormField name="name" label="Name" initialValue={PLATFORM_NAME} rules={[{ required: true }]}>
+      <FormField name="name" label="Name" initialValue="HaierHomebridgePlugin" rules={[{ required: true }]}>
         <Form.Control type="text" placeholder="Enter name" required />
       </FormField>
       <FormField name="username" label={i18n?.['login.label_username'] ?? 'Username'} rules={[{ required: true }]}>
@@ -53,13 +49,21 @@ function App() {
         <Form.Control type="password" placeholder="Enter password" required />
       </FormField>
       <FormField name="familyId" label={i18n?.['accessories.control.label_home'] ?? 'Family'}>
-        <Form.Select bsPrefix="form-control">
-          {familyList?.map(family => (
-            <option key={family.familyId} value={family.familyId}>
-              {family.familyName}
-            </option>
-          ))}
-        </Form.Select>
+        <Select
+          options={familyList?.map(item => ({
+            label: item.familyName,
+            value: item.familyId,
+          }))}
+        />
+      </FormField>
+      <FormField name="disabledDevices" label="Disabled Devices">
+        <Select
+          mode="multiple"
+          options={devices?.map(item => ({
+            label: `${item.extendedInfo.room} - ${item.baseInfo.deviceName}`,
+            value: item.baseInfo.deviceId,
+          }))}
+        />
       </FormField>
     </RcForm>
   );
