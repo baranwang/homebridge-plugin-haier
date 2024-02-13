@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.1](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.3.0...v1.3.1) (2024-02-13)
+
+### Bug Fixes
+
+- service 未初始化导致的错误 ([e041788](https://github.com/baranwang/homebridge-plugin-haier/commit/e041788d30a99029d84a17e6a985d9aa7e5e1d93))
+
 # [1.3.0](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.2.3...v1.3.0) (2024-02-13)
 
 ### Features
