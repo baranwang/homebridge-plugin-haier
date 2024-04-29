@@ -19,7 +19,11 @@
   "devDependencies": {
     "@modern-js/module-tools": "^2.46.1",
     "@types/node": "^18.16.20",
+    "homebridge": "^1.6.1",
     "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "homebridge": "*"
   },
   "publishConfig": {
     "access": "public",

@@ -3,5 +3,38 @@
   "pluginType": "platform",
   "singular": true,
   "customUi": true,
-  "customUiPath": "./homebridge-ui"
+  "customUiPath": "./homebridge-ui",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true,
+        "default": "HaierHomebridgePlugin"
+      },
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "required": true
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "required": true
+      },
+      "familyId": {
+        "title": "Family ID",
+        "type": "string",
+        "required": true
+      },
+      "disabledDevices": {
+        "title": "Disabled Devices",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

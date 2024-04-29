@@ -10,6 +10,8 @@ export default defineConfig({
   },
   output: {
     assetPrefix: './',
-    legalComments: 'none',
+    distPath: {
+      root: '../plugin/homebridge-ui/public'
+    }
   }
 });
