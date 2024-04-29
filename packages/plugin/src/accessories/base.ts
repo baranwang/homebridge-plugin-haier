@@ -8,7 +8,10 @@ export class BaseAccessory {
 
   private devDigitalModelPromise?: Promise<DevDigitalModel>;
 
-  constructor(readonly platform: HaierHomebridgePlatform, readonly accessory: HaierPlatformAccessory) {
+  constructor(
+    readonly platform: HaierHomebridgePlatform,
+    readonly accessory: HaierPlatformAccessory,
+  ) {
     const { deviceInfo } = this.accessory.context;
     const { Characteristic, Service } = this.platform;
     this.accessory
