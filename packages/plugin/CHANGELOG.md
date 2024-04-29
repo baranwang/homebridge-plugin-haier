@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.4](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.3.3...v1.3.4) (2024-04-29)
+
+**Note:** Version bump only for package @hb-haier/homebridge-plugin
+
 ## [1.3.3](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.3.2...v1.3.3) (2024-04-29)
 
 **Note:** Version bump only for package @hb-haier/homebridge-plugin
