@@ -1,13 +1,13 @@
 {
   "name": "@hb-haier/ui-renderer",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "private": true,
   "scripts": {
     "dev": "rsbuild dev",
     "build": "rsbuild build"
   },
   "dependencies": {
-    "@hb-haier/shared": "1.3.3",
+    "@hb-haier/shared": "1.3.4",
     "ahooks": "^3.7.10",
     "rc-field-form": "^1.41.0",
     "rc-select": "^14.11.0",
