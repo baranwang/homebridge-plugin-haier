@@ -4,7 +4,6 @@ import path from 'path';
 import { URL } from 'url';
 
 import axios from 'axios';
-import { Logger } from 'homebridge/lib/logger';
 
 import { HttpError, getSn, sha256 } from '../utils';
 
@@ -16,7 +15,7 @@ import type {
   TokenInfo,
 } from './types';
 import type { AxiosInstance } from 'axios';
-import type { API } from 'homebridge';
+import type { API, Logger } from 'homebridge';
 
 export * from './types';
 
@@ -37,8 +36,6 @@ export class HaierApi {
   axios!: AxiosInstance;
 
   tokenInfo?: TokenInfo;
-
-  logger = new Logger('HaierApi');
 
   get storagePath() {
     return path.resolve(this.api?.user.storagePath() ?? path.dirname(__dirname), '.hb-haier');
@@ -64,7 +61,11 @@ export class HaierApi {
     return clientId;
   }
 
-  constructor(readonly config: HaierApiConfig, readonly api?: API) {
+  get logger() {
+    return this.log ?? console;
+  }
+
+  constructor(readonly config: HaierApiConfig, readonly api?: API, readonly log?: Logger) {
     this.getTokenInfo();
 
     this.axios = axios.create({
