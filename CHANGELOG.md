@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.3](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.3.2...v1.3.3) (2024-04-29)
+
+### Bug Fixes
+
+- markdown typo ([ab2b219](https://github.com/baranwang/homebridge-plugin-haier/commit/ab2b219adbd908603cbfbcb354df40dafb3f6fc2))
+
 ## [1.3.2](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.3.1...v1.3.2) (2024-02-13)
 
 ### Bug Fixes
