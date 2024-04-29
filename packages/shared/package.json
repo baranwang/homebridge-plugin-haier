@@ -22,9 +22,6 @@
     "homebridge": "^1.6.1",
     "typescript": "^5.2.2"
   },
-  "peerDependencies": {
-    "homebridge": "*"
-  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
