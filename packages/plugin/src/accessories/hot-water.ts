@@ -1,4 +1,4 @@
-import { CharacteristicValue } from 'homebridge';
+import { CharacteristicProps, CharacteristicValue } from 'homebridge';
 import { BaseAccessory } from './base';
 
 export class HotWaterAccessory extends BaseAccessory {
@@ -8,45 +8,40 @@ export class HotWaterAccessory extends BaseAccessory {
   }
 
   async init() {
-    this.generateServices([this.platform.Service.HeaterCooler, this.platform.Service.TemperatureSensor]);
+    this.generateServices([this.platform.Service.Thermostat]);
 
     await this.getDevDigitalModel();
 
-    //#region HeaterCooler
-    // 开关
+    //#region Thermostat
     this.services[0]
-      .getCharacteristic(this.Characteristic.Active)
-      .onGet(this.getActive.bind(this))
-      .onSet(this.setActive.bind(this));
+      .getCharacteristic(this.Characteristic.CurrentHeatingCoolingState)
+      .onGet(this.getCurrentHeatingCoolingState.bind(this));
 
-    // 当前状态，只支持加热
     this.services[0]
-      .getCharacteristic(this.platform.Characteristic.CurrentHeaterCoolerState)
-      .onGet(() => this.platform.Characteristic.CurrentHeaterCoolerState.HEATING);
-    this.services[0]
-      .getCharacteristic(this.platform.Characteristic.TargetHeaterCoolerState)
+      .getCharacteristic(this.Characteristic.TargetHeatingCoolingState)
+      .onGet(this.getCurrentHeatingCoolingState.bind(this)) // 与 CurrentHeatingCoolingState 保持一致
+      .onSet(this.setTargetHeatingCoolingState.bind(this))
       .setProps({
-        // minValue: this.platform.Characteristic.TargetHeaterCoolerState.HEAT,
-        maxValue: this.platform.Characteristic.TargetHeaterCoolerState.HEAT,
-        validValues: [this.platform.Characteristic.TargetHeaterCoolerState.HEAT],
-      })
-      .onGet(() => this.platform.Characteristic.TargetHeaterCoolerState.HEAT);
+        validValues: [
+          this.Characteristic.TargetHeatingCoolingState.OFF,
+          this.Characteristic.TargetHeatingCoolingState.HEAT,
+        ],
+      });
 
-    // 当前温度
     this.services[0]
       .getCharacteristic(this.Characteristic.CurrentTemperature)
-      .onGet(this.getTargetTemperature.bind(this));
+      .onGet(this.getTargetTemperature.bind(this)); // 与 TargetTemperature 保持一致
 
-    // 目标温度
     this.services[0]
-      .getCharacteristic(this.Characteristic.HeatingThresholdTemperature)
-      .setProps(this.targetTemperatureProps)
+      .getCharacteristic(this.Characteristic.TargetTemperature)
       .onGet(this.getTargetTemperature.bind(this))
-      .onSet(this.setTargetTemperature.bind(this));
-    //#endregion
+      .onSet(this.setTargetTemperature.bind(this))
+      .setProps(this.targetTemperatureProps);
 
-    // 进水水温传感器
-    this.services[1].getCharacteristic(this.Characteristic.CurrentTemperature).onGet(() => this.inWaterTemperature);
+    this.services[0]
+      .getCharacteristic(this.Characteristic.TemperatureDisplayUnits)
+      .onGet(() => this.Characteristic.TemperatureDisplayUnits.CELSIUS);
+    //#endregion
   }
 
   private get onOffStatus() {
@@ -55,39 +50,46 @@ export class HotWaterAccessory extends BaseAccessory {
   }
 
   private get targetTemperature() {
-    const targetTemp: number = JSON.parse(this.devDigitalModelPropertiesMap.targetTemp.value);
-    return targetTemp;
+    return this.devDigitalModelPropertiesMap.targetTemp.value;
+  }
+
+  private set targetTemperature(value: string) {
+    this.devDigitalModelPropertiesMap.targetTemp.value = value;
   }
 
   private get targetTemperatureProps() {
-    const { maxValue, minValue, step } = this.devDigitalModelPropertiesMap.targetTemp.valueRange.dataStep;
+    const { dataStep } = this.devDigitalModelPropertiesMap.targetTemp.valueRange;
+    const minValue = Number(dataStep.minValue);
+    const maxValue = Number(dataStep.maxValue);
+    const minStep = Number(dataStep.step);
     return {
-      minValue: Number(minValue),
-      maxValue: Number(maxValue),
-      minStep: Number(step),
+      minValue,
+      maxValue,
+      minStep,
+      validValueRanges: [minValue, maxValue] as CharacteristicProps['validValueRanges'],
     };
   }
 
-  private get inWaterTemperature() {
-    const inWaterTemp: number = JSON.parse(this.devDigitalModelPropertiesMap.inWaterTemp.value);
-    return inWaterTemp;
+  getCurrentHeatingCoolingState() {
+    return this.onOffStatus
+      ? this.Characteristic.CurrentHeatingCoolingState.HEAT
+      : this.Characteristic.CurrentHeatingCoolingState.OFF;
   }
 
-  getActive() {
-    return this.onOffStatus ? this.Characteristic.Active.ACTIVE : this.Characteristic.Active.INACTIVE;
-  }
-
-  async setActive(value: CharacteristicValue) {
+  async setTargetHeatingCoolingState(value: CharacteristicValue) {
     await this.sendCommands({ onOffStatus: (!!value).toString() });
   }
 
   getTargetTemperature() {
-    return this.targetTemperature;
+    return Number(this.targetTemperature);
   }
 
-  setTargetTemperature(value: CharacteristicValue) {
+  async setTargetTemperature(value: CharacteristicValue) {
     const { minValue, maxValue } = this.targetTemperatureProps;
     const targetTemp = Math.min(Math.max(value as number, minValue), maxValue).toString();
-    this.sendCommands({ targetTemp });
+    try {
+      await this.sendCommands({ targetTemp });
+      this.targetTemperature = targetTemp;
+    } catch (error) {}
   }
 }
