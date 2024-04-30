@@ -1,6 +1,6 @@
 import { HaierApi, PLATFORM_NAME, PLUGIN_NAME } from '@hb-haier/shared';
 
-import { AirConditionerAccessory } from './accessories';
+import { AirConditionerAccessory, HotWaterAccessory } from './accessories';
 
 import type { HaierPlatformAccessory, HaierPlatformAccessoryContext } from './types';
 import type { DeviceInfo, HaierApiConfig } from '@hb-haier/shared';
@@ -112,6 +112,9 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
     switch (deviceInfo.extendedInfo.categoryGrouping) {
       case '空调':
         return AirConditionerAccessory;
+
+      case '热水卫浴':
+        return HotWaterAccessory;
 
       default:
         return undefined;

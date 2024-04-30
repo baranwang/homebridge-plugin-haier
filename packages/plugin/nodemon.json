@@ -1,8 +1,8 @@
 {
-  "watch": ["src", "../api/dist"],
+  "watch": ["src"],
   "ext": "ts",
   "ignore": [],
-  "exec": "npm run build && npm link && homebridge -I -D",
+  "exec": "lerna run build && npm link && homebridge -I -D",
   "signal": "SIGTERM",
   "env": {
     "NODE_OPTIONS": "--trace-warnings"
