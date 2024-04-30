@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.3.4...v1.4.0) (2024-04-30)
+
+### Features
+
+- 优化响应 ([eedf1c4](https://github.com/baranwang/homebridge-plugin-haier/commit/eedf1c45ca67f95786fbdf40a8cf0501f620b94b))
+- 新增热水器类型设备支持 ([07b3d51](https://github.com/baranwang/homebridge-plugin-haier/commit/07b3d515cf6512a8e953c3fe12d4293bc0c2e957))
+
 ## [1.3.4](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.3.3...v1.3.4) (2024-04-29)
 
 **Note:** Version bump only for package @hb-haier/homebridge-plugin
