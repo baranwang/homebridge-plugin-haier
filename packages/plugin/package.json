@@ -5,7 +5,8 @@
   "description": "海尔智家 Homebridge 插件",
   "scripts": {
     "dev": "nodemon",
-    "build": "rimraf ./dist && tsc"
+    "build": "rimraf ./dist && tsc",
+    "postinstall": "node ./scripts/postinstall.js"
   },
   "repository": {
     "type": "git",
