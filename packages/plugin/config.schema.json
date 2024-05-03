@@ -3,7 +3,6 @@
   "pluginType": "platform",
   "singular": true,
   "customUi": true,
-  "customUiPath": "./homebridge-ui",
   "schema": {
     "type": "object",
     "properties": {
@@ -27,13 +26,6 @@
         "title": "Family ID",
         "type": "string",
         "required": true
-      },
-      "disabledDevices": {
-        "title": "Disabled Devices",
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
       }
     }
   }
