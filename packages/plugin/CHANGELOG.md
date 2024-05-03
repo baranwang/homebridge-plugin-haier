@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.1](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.4.0...v1.4.1) (2024-05-03)
+
+### Bug Fixes
+
+- 错误的忽略掉了自定义 UI 目录 ([baf4eef](https://github.com/baranwang/homebridge-plugin-haier/commit/baf4eef8ea644ad432f0a616f132613668493022))
+
 # [1.4.0](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.3.4...v1.4.0) (2024-04-30)
 
 ### Features
