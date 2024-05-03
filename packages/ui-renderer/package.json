@@ -1,7 +1,6 @@
 {
   "name": "@hb-haier/ui-renderer",
   "version": "1.4.2",
-  "private": true,
   "scripts": {
     "dev": "rsbuild dev",
     "build": "rsbuild build"

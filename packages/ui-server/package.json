@@ -1,7 +1,6 @@
 {
   "name": "@hb-haier/ui-server",
   "version": "1.4.2",
-  "private": true,
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "files": [

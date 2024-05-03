@@ -22,7 +22,7 @@
   "main": "dist/index.js",
   "files": [
     "dist",
-    "homebridge-ui",
+    "scripts",
     "config.schema.json",
     "CHANGELOG.md"
   ],
@@ -32,7 +32,9 @@
     "海尔"
   ],
   "dependencies": {
-    "@hb-haier/shared": "1.4.2"
+    "@hb-haier/shared": "1.4.2",
+    "@hb-haier/ui-renderer": "1.4.2",
+    "@hb-haier/ui-server": "1.4.2"
   },
   "devDependencies": {
     "@types/node": "^18.16.20",
