@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.4](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.4.3...v1.4.4) (2024-05-03)
+
+### Bug Fixes
+
+- miss post script ([395011c](https://github.com/baranwang/homebridge-plugin-haier/commit/395011cfadc0d0d90e5f7fa56dbc876ba56dfff5))
+
 ## [1.4.3](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.4.2...v1.4.3) (2024-05-03)
 
 **Note:** Version bump only for package hb-haier
