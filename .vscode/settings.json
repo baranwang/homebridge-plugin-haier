@@ -15,5 +15,8 @@
       ],
       "url": "../node_modules/lerna/schemas/lerna-schema.json"
     }
-  ]
+  ],
+  "i18n-ally.localesPaths": [
+    "packages/ui-renderer/src/lang"
+  ],
 }

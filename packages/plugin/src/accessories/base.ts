@@ -7,7 +7,7 @@ type GenerateServicesParams =
   | typeof Service
   | {
       service: typeof Service;
-      displayName: string;
+      subName: string;
     };
 
 export class BaseAccessory {
@@ -31,9 +31,9 @@ export class BaseAccessory {
       const existingService = this.accessory.getService(key);
       if (existingService) {
         acc[key] = existingService;
-      } else if ('displayName' in params) {
-        const { displayName, service } = params;
-        acc[key] = this.accessory.addService(service, displayName, key);
+      } else if ('subName' in params) {
+        const { subName, service } = params;
+        acc[key] = this.accessory.addService(service, `${this.accessory.displayName} - ${subName}`, key);
       } else {
         acc[key] = this.accessory.addService(params, this.accessory.displayName, key);
       }
