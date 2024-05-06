@@ -1,7 +1,7 @@
 {
   "name": "@hb-haier/homebridge-plugin",
   "displayName": "Haier",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "海尔智家 Homebridge 插件",
   "scripts": {
     "dev": "nodemon",
@@ -35,9 +35,9 @@
     "海尔"
   ],
   "dependencies": {
-    "@hb-haier/shared": "1.5.1",
-    "@hb-haier/ui-renderer": "1.5.1",
-    "@hb-haier/ui-server": "1.5.1"
+    "@hb-haier/shared": "1.6.0",
+    "@hb-haier/ui-renderer": "1.6.0",
+    "@hb-haier/ui-server": "1.6.0"
   },
   "devDependencies": {
     "@types/node": "^18.16.20",

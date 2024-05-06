@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.5.1...v1.6.0) (2024-05-06)
+
+### Features
+
+- 新增浴缸注水开关 ([de553c4](https://github.com/baranwang/homebridge-plugin-haier/commit/de553c49fcde7d4db332e60244fd17de65913efe))
+
 ## [1.5.1](https://github.com/baranwang/homebridge-plugin-haier/compare/v1.5.0...v1.5.1) (2024-05-06)
 
 **Note:** Version bump only for package @hb-haier/homebridge-plugin
