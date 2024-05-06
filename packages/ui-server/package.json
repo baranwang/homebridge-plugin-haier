@@ -1,6 +1,6 @@
 {
   "name": "@hb-haier/ui-server",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "files": [
@@ -12,7 +12,7 @@
     "build": "modern build"
   },
   "dependencies": {
-    "@hb-haier/shared": "1.5.0",
+    "@hb-haier/shared": "1.5.1",
     "@homebridge/plugin-ui-utils": "^1.0.3"
   },
   "devDependencies": {
