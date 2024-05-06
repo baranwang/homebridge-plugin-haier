@@ -16,6 +16,10 @@ export class HotWaterAccessory extends BaseAccessory {
       CurrentTemperature,
       TargetTemperature,
       TemperatureDisplayUnits,
+      Active,
+      InUse,
+      ValveType,
+      Name,
     } = this.Characteristic;
 
     //#region Thermostat
@@ -41,6 +45,30 @@ export class HotWaterAccessory extends BaseAccessory {
 
     this.services.thermostat.getCharacteristic(TemperatureDisplayUnits).onGet(() => TemperatureDisplayUnits.CELSIUS);
     //#endregion
+
+    if (this.devProps.tankWateringStatus) {
+      this.generateServices({
+        valve: {
+          service: this.platform.Service.Valve,
+          subName: '浴缸注水',
+        },
+      });
+
+      this.services.valve
+        .getCharacteristic(Active)
+        .onGet(() => (this.devProps.tankWateringStatus === 'true' ? Active.ACTIVE : Active.INACTIVE))
+        .onSet(value => {
+          this.devProps.tankWateringStatus = (!!value).toString();
+        });
+
+      this.services.valve
+        .getCharacteristic(InUse)
+        .onGet(() => (this.devProps.tankWaterLevel === 'false' ? InUse.NOT_IN_USE : InUse.IN_USE));
+
+      this.services.valve.getCharacteristic(ValveType).onGet(() => ValveType.WATER_FAUCET);
+
+      this.services.valve.getCharacteristic(Name).onGet(() => '浴缸注水');
+    }
   }
 
   private get targetTemperatureProps() {
