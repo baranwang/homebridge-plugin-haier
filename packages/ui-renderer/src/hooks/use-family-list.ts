@@ -1,6 +1,8 @@
-import { HaierApi } from '@hb-haier/shared';
-import { useRequest } from 'ahooks';
 import { useEffect } from 'react';
+
+import { useRequest } from 'ahooks';
+
+import type { HaierApi } from '@hb-haier/shared';
 
 export function useFamilyList({ username, password }: { username?: string; password?: string }) {
   const { data: familyList, loading } = useRequest(
@@ -11,6 +13,10 @@ export function useFamilyList({ username, password }: { username?: string; passw
       ready: !!username && !!password,
       refreshDeps: [username, password],
       debounceWait: 500,
+      onError: error => {
+        console.error('error', error.name, error.message);
+        window.homebridge.toast.error(error.message);
+      },
     },
   );
   useEffect(() => {

@@ -1,60 +1,46 @@
-import { CharacteristicProps, CharacteristicValue } from 'homebridge';
 import { BaseAccessory } from './base';
 
-export class HotWaterAccessory extends BaseAccessory {
-  constructor(platform, accessory) {
-    super(platform, accessory);
-    this.init();
-  }
+import type { CharacteristicProps, CharacteristicValue } from 'homebridge';
 
+export class HotWaterAccessory extends BaseAccessory {
   async init() {
-    this.generateServices([this.platform.Service.Thermostat]);
+    this.generateServices({
+      thermostat: this.platform.Service.Thermostat,
+    });
 
     await this.getDevDigitalModel();
 
+    const {
+      CurrentHeatingCoolingState,
+      TargetHeatingCoolingState,
+      CurrentTemperature,
+      TargetTemperature,
+      TemperatureDisplayUnits,
+    } = this.Characteristic;
+
     //#region Thermostat
-    this.services[0]
-      .getCharacteristic(this.Characteristic.CurrentHeatingCoolingState)
+    this.services.thermostat
+      .getCharacteristic(CurrentHeatingCoolingState)
       .onGet(this.getCurrentHeatingCoolingState.bind(this));
 
-    this.services[0]
-      .getCharacteristic(this.Characteristic.TargetHeatingCoolingState)
+    this.services.thermostat
+      .getCharacteristic(TargetHeatingCoolingState)
       .onGet(this.getCurrentHeatingCoolingState.bind(this)) // 与 CurrentHeatingCoolingState 保持一致
       .onSet(this.setTargetHeatingCoolingState.bind(this))
       .setProps({
-        validValues: [
-          this.Characteristic.TargetHeatingCoolingState.OFF,
-          this.Characteristic.TargetHeatingCoolingState.HEAT,
-        ],
+        validValues: [TargetHeatingCoolingState.OFF, TargetHeatingCoolingState.HEAT],
       });
 
-    this.services[0]
-      .getCharacteristic(this.Characteristic.CurrentTemperature)
-      .onGet(this.getTargetTemperature.bind(this)); // 与 TargetTemperature 保持一致
+    this.services.thermostat.getCharacteristic(CurrentTemperature).onGet(this.getTargetTemperature.bind(this)); // 与 TargetTemperature 保持一致
 
-    this.services[0]
-      .getCharacteristic(this.Characteristic.TargetTemperature)
+    this.services.thermostat
+      .getCharacteristic(TargetTemperature)
       .onGet(this.getTargetTemperature.bind(this))
       .onSet(this.setTargetTemperature.bind(this))
       .setProps(this.targetTemperatureProps);
 
-    this.services[0]
-      .getCharacteristic(this.Characteristic.TemperatureDisplayUnits)
-      .onGet(() => this.Characteristic.TemperatureDisplayUnits.CELSIUS);
+    this.services.thermostat.getCharacteristic(TemperatureDisplayUnits).onGet(() => TemperatureDisplayUnits.CELSIUS);
     //#endregion
-  }
-
-  private get onOffStatus() {
-    const onOffStatus: boolean = JSON.parse(this.devDigitalModelPropertiesMap.onOffStatus.value);
-    return onOffStatus;
-  }
-
-  private get targetTemperature() {
-    return this.devDigitalModelPropertiesMap.targetTemp.value;
-  }
-
-  private set targetTemperature(value: string) {
-    this.devDigitalModelPropertiesMap.targetTemp.value = value;
   }
 
   private get targetTemperatureProps() {
@@ -70,26 +56,54 @@ export class HotWaterAccessory extends BaseAccessory {
     };
   }
 
-  getCurrentHeatingCoolingState() {
-    return this.onOffStatus
+  private get isOn() {
+    return this.devProps.onOffStatus === 'true';
+  }
+
+  private get currentHeatingCoolingState() {
+    return this.isOn
       ? this.Characteristic.CurrentHeatingCoolingState.HEAT
       : this.Characteristic.CurrentHeatingCoolingState.OFF;
   }
 
+  async getCurrentHeatingCoolingState() {
+    await this.getDevDigitalModel();
+    return this.currentHeatingCoolingState;
+  }
+
   async setTargetHeatingCoolingState(value: CharacteristicValue) {
-    await this.sendCommands({ onOffStatus: (!!value).toString() });
+    this.devProps.onOffStatus = value === this.Characteristic.TargetHeatingCoolingState.OFF ? '0' : '1';
   }
 
-  getTargetTemperature() {
-    return Number(this.targetTemperature);
+  async getTargetTemperature() {
+    await this.getDevDigitalModel();
+    return Number(this.devProps.targetTemp);
   }
 
-  async setTargetTemperature(value: CharacteristicValue) {
+  setTargetTemperature(value: CharacteristicValue) {
+    if (!this.isOn) {
+      this.setTargetHeatingCoolingState(this.Characteristic.TargetHeatingCoolingState.HEAT);
+    }
     const { minValue, maxValue } = this.targetTemperatureProps;
     const targetTemp = Math.min(Math.max(value as number, minValue), maxValue).toString();
     try {
-      await this.sendCommands({ targetTemp });
-      this.targetTemperature = targetTemp;
+      this.devProps.targetTemp = targetTemp;
     } catch (error) {}
+  }
+
+  onDevDigitalModelUpdate() {
+    if (!this.services.thermostat) {
+      return;
+    }
+
+    this.services.thermostat.updateCharacteristic(
+      this.Characteristic.CurrentHeatingCoolingState,
+      this.currentHeatingCoolingState,
+    );
+
+    this.services.thermostat.updateCharacteristic(
+      this.Characteristic.TargetTemperature,
+      Number(this.devProps.targetTemp),
+    );
   }
 }

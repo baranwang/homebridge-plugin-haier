@@ -3,13 +3,10 @@ import { BaseAccessory } from './base';
 import type { CharacteristicProps, CharacteristicValue } from 'homebridge';
 
 export class AirConditionerAccessory extends BaseAccessory {
-  constructor(platform, accessory) {
-    super(platform, accessory);
-    this.init();
-  }
-
   async init() {
-    this.generateServices([this.platform.Service.Thermostat]);
+    this.generateServices({
+      thermostat: this.platform.Service.Thermostat,
+    });
 
     await this.getDevDigitalModel();
 
@@ -24,34 +21,38 @@ export class AirConditionerAccessory extends BaseAccessory {
     } = this.Characteristic;
 
     //#region Thermostat
-    this.services[0].getCharacteristic(CurrentHeatingCoolingState).onGet(this.getCurrentHeatingCoolingState.bind(this));
+    this.services.thermostat
+      .getCharacteristic(CurrentHeatingCoolingState)
+      .onGet(this.getCurrentHeatingCoolingState.bind(this));
 
-    this.services[0]
+    this.services.thermostat
       .getCharacteristic(TargetHeatingCoolingState)
       .onGet(this.getTargetHeatingCoolingState.bind(this))
       .onSet(this.setTargetHeatingCoolingState.bind(this));
 
-    this.services[0].getCharacteristic(CurrentTemperature).onGet(this.getCurrentTemperature.bind(this));
+    this.services.thermostat.getCharacteristic(CurrentTemperature).onGet(this.getCurrentTemperature.bind(this));
 
-    this.services[0]
+    this.services.thermostat
       .getCharacteristic(TargetTemperature)
       .onGet(this.getTargetTemperature.bind(this))
       .onSet(this.setTargetTemperature.bind(this))
       .setProps(this.targetTemperatureProps);
 
-    this.services[0].getCharacteristic(TemperatureDisplayUnits).onGet(this.getTemperatureDisplayUnits.bind(this));
+    this.services.thermostat
+      .getCharacteristic(TemperatureDisplayUnits)
+      .onGet(this.getTemperatureDisplayUnits.bind(this));
 
-    if (this.devDigitalModelPropertiesMap.indoorHumidity) {
-      this.services[0].getCharacteristic(CurrentRelativeHumidity).onGet(this.getCurrentRelativeHumidity.bind(this));
+    if (this.devProps.indoorHumidity) {
+      this.services.thermostat
+        .getCharacteristic(CurrentRelativeHumidity)
+        .onGet(this.getCurrentRelativeHumidity.bind(this));
     }
-    if (this.devDigitalModelPropertiesMap.targetHumidity) {
-      this.services[0].getCharacteristic(TargetRelativeHumidity).onGet(this.getTargetRelativeHumidity.bind(this));
+    if (this.devProps.targetHumidity) {
+      this.services.thermostat
+        .getCharacteristic(TargetRelativeHumidity)
+        .onGet(this.getTargetRelativeHumidity.bind(this));
     }
     //#endregion
-  }
-
-  onDevDigitalModelUpdate() {
-    this.services[0]?.getCharacteristic(this.Characteristic.TargetTemperature).setProps(this.targetTemperatureProps);
   }
 
   private get targetTemperatureProps(): Partial<CharacteristicProps> {
@@ -65,27 +66,26 @@ export class AirConditionerAccessory extends BaseAccessory {
   }
 
   private get onOffStatus() {
-    const onOffStatus: boolean = JSON.parse(this.devDigitalModelPropertiesMap.onOffStatus.value);
+    const onOffStatus: boolean = JSON.parse(this.devProps.onOffStatus);
     return onOffStatus;
   }
 
   private get currentTemperature() {
-    const indoorTemperature: number = JSON.parse(this.devDigitalModelPropertiesMap.indoorTemperature.value);
+    const indoorTemperature: number = JSON.parse(this.devProps.indoorTemperature);
     return indoorTemperature;
   }
 
   private get targetTemperature() {
-    const targetTemperature: number = JSON.parse(this.devDigitalModelPropertiesMap.targetTemperature.value);
+    const targetTemperature: number = JSON.parse(this.devProps.targetTemperature);
     return targetTemperature;
   }
 
-  async getCurrentHeatingCoolingState() {
-    await this.getDevDigitalModel();
+  get currentHeatingCoolingState() {
     const { CurrentHeatingCoolingState } = this.Characteristic;
     if (!this.onOffStatus) {
       return CurrentHeatingCoolingState.OFF;
     }
-    const mode: string = this.devDigitalModelPropertiesMap.operationMode.value;
+    const mode: string = this.devProps.operationMode;
     switch (mode) {
       case '1':
         return CurrentHeatingCoolingState.COOL;
@@ -101,13 +101,17 @@ export class AirConditionerAccessory extends BaseAccessory {
     }
   }
 
-  async getTargetHeatingCoolingState() {
+  async getCurrentHeatingCoolingState() {
     await this.getDevDigitalModel();
+    return this.currentHeatingCoolingState;
+  }
+
+  get targetHeatingCoolingState() {
     const { TargetHeatingCoolingState } = this.Characteristic;
     if (!this.onOffStatus) {
       return TargetHeatingCoolingState.OFF;
     }
-    const mode: string = this.devDigitalModelPropertiesMap.operationMode.value;
+    const mode: string = this.devProps.operationMode;
     switch (mode) {
       case '1':
         return TargetHeatingCoolingState.COOL;
@@ -118,11 +122,16 @@ export class AirConditionerAccessory extends BaseAccessory {
     }
   }
 
+  async getTargetHeatingCoolingState() {
+    await this.getDevDigitalModel();
+    return this.targetHeatingCoolingState;
+  }
+
   async setTargetHeatingCoolingState(value: CharacteristicValue) {
     const { TargetHeatingCoolingState } = this.Characteristic;
 
     if (value === TargetHeatingCoolingState.OFF) {
-      await this.sendCommands({ onOffStatus: 'false' });
+      this.devProps.onOffStatus = 'false';
       return;
     }
     const modeMap = {
@@ -164,15 +173,56 @@ export class AirConditionerAccessory extends BaseAccessory {
     return this.Characteristic.TemperatureDisplayUnits.CELSIUS;
   }
 
+  get currentRelativeHumidity() {
+    const indoorHumidity: number = JSON.parse(this.devProps.indoorHumidity);
+    return indoorHumidity;
+  }
+
   async getCurrentRelativeHumidity() {
     await this.getDevDigitalModel();
-    const indoorHumidity: number = JSON.parse(this.devDigitalModelPropertiesMap.indoorHumidity.value);
-    return indoorHumidity;
+    return this.currentRelativeHumidity;
+  }
+
+  get targetRelativeHumidity() {
+    const targetHumidity: number = JSON.parse(this.devProps.targetHumidity);
+    return targetHumidity;
   }
 
   async getTargetRelativeHumidity() {
     await this.getDevDigitalModel();
-    const targetHumidity: number = JSON.parse(this.devDigitalModelPropertiesMap.targetHumidity.value);
-    return targetHumidity;
+    return this.targetRelativeHumidity;
+  }
+
+  onDevDigitalModelUpdate() {
+    if (!this.services.thermostat) {
+      return;
+    }
+    const {
+      TargetTemperature,
+      CurrentTemperature,
+      CurrentHeatingCoolingState,
+      TargetHeatingCoolingState,
+      CurrentRelativeHumidity,
+      TargetRelativeHumidity,
+    } = this.Characteristic;
+
+    this.services.thermostat
+      .getCharacteristic(TargetTemperature)
+      .setProps(this.targetTemperatureProps)
+      .updateValue(this.targetTemperature);
+
+    this.services.thermostat.updateCharacteristic(TargetTemperature, this.targetTemperature);
+    this.services.thermostat.updateCharacteristic(CurrentTemperature, this.currentTemperature);
+
+    this.services.thermostat.updateCharacteristic(CurrentHeatingCoolingState, this.currentHeatingCoolingState);
+
+    this.services.thermostat.updateCharacteristic(TargetHeatingCoolingState, this.targetHeatingCoolingState);
+
+    if (this.devProps.indoorHumidity) {
+      this.services.thermostat.updateCharacteristic(CurrentRelativeHumidity, this.currentRelativeHumidity);
+    }
+    if (this.devProps.targetHumidity) {
+      this.services.thermostat.updateCharacteristic(TargetRelativeHumidity, this.targetRelativeHumidity);
+    }
   }
 }

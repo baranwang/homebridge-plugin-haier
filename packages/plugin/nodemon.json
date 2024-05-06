@@ -1,8 +1,9 @@
 {
-  "watch": ["src"],
-  "ext": "ts",
+  "$schema": "https://github.com/SchemaStore/schemastore/raw/master/src/schemas/json/nodemon.json",
+  "watch": ["src", "homebridge-ui", "config.schema.json"],
+  "ext": "ts,js,json",
   "ignore": [],
-  "exec": "lerna run build && npm link && homebridge -I -D",
+  "exec": "tsc && npm run generate-ui && npm link && homebridge -I -D",
   "signal": "SIGTERM",
   "env": {
     "NODE_OPTIONS": "--trace-warnings"

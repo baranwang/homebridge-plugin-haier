@@ -2,7 +2,7 @@
   "name": "@hb-haier/ui-renderer",
   "version": "1.4.4",
   "scripts": {
-    "dev": "rsbuild dev",
+    "dev": "rsbuild build -w",
     "build": "rsbuild build"
   },
   "dependencies": {
@@ -11,7 +11,7 @@
     "rc-field-form": "^1.41.0",
     "rc-select": "^14.11.0",
     "react": "^18.2.0",
-    "react-bootstrap": "^2.10.1",
+    "react-bootstrap": "^1.6.7",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {

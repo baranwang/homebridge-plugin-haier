@@ -1,4 +1,5 @@
-import { HaierApi, PLATFORM_NAME, PLUGIN_NAME } from '@hb-haier/shared';
+import { HaierApi } from '@hb-haier/shared';
+import { PLATFORM_NAME, PLUGIN_NAME } from '@hb-haier/shared/constants';
 
 import { AirConditionerAccessory, HotWaterAccessory } from './accessories';
 
@@ -15,26 +16,17 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
 
   public haierApi!: HaierApi;
 
-  private discoveryInterval?: NodeJS.Timeout;
-
-  constructor(
-    public readonly log: Logger,
-    public readonly config: PlatformConfig,
-    public readonly api: API,
-  ) {
+  constructor(public readonly log: Logger, public readonly config: PlatformConfig, public readonly api: API) {
     this.log.debug('平台初始化完成', this.config.name);
 
     this.api.on('didFinishLaunching', () => {
       this.log.debug('Executed didFinishLaunching callback');
       this.haierApi = new HaierApi(config as unknown as HaierApiConfig, api, log);
-      // this.haierApi.connectWss();
       this.discoverDevices();
-      this.discoveryInterval = setInterval(() => this.discoverDevices(), 2 * 60 * 1000);
     });
 
     this.api.on('shutdown', () => {
       this.log.debug('Executed shutdown callback');
-      this.discoveryInterval && clearInterval(this.discoveryInterval);
     });
   }
 

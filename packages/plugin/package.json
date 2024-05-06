@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon",
     "build": "rimraf ./dist && tsc",
-    "postinstall": "node ./scripts/postinstall.js"
+    "generate-ui": "node ./scripts/generate-ui.js",
+    "postinstall": "npm run generate-ui"
   },
   "repository": {
     "type": "git",
@@ -43,7 +44,6 @@
     "homebridge-config-ui-x": "^4.50.6",
     "nodemon": "^3.0.1",
     "rimraf": "^5.0.5",
-    "ts-node": "^10.9.1",
     "typescript": "^5.3.0"
   },
   "publishConfig": {

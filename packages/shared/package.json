@@ -4,6 +4,19 @@
   "types": "./dist/types/index.d.ts",
   "main": "./dist/lib/index.js",
   "module": "./dist/es/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/es/index.js",
+      "require": "./dist/lib/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./constants": {
+      "import": "./dist/es/constants.js",
+      "require": "./dist/lib/constants.js",
+      "types": "./dist/types/constants.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "dev": "modern build -w",
     "build": "modern build"

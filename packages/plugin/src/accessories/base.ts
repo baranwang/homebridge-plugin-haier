@@ -3,15 +3,19 @@ import type { HaierPlatformAccessory } from '../types';
 import type { DevDigitalModel } from '@hb-haier/shared';
 import type { Service } from 'homebridge';
 
+type GenerateServicesParams =
+  | typeof Service
+  | {
+      service: typeof Service;
+      displayName: string;
+    };
+
 export class BaseAccessory {
-  public services: Service[] = [];
+  public services: Record<string, Service> = {};
 
   private devDigitalModelPromise?: Promise<DevDigitalModel>;
 
-  constructor(
-    readonly platform: HaierHomebridgePlatform,
-    readonly accessory: HaierPlatformAccessory,
-  ) {
+  constructor(readonly platform: HaierHomebridgePlatform, readonly accessory: HaierPlatformAccessory) {
     const { deviceInfo } = this.accessory.context;
     const { Characteristic, Service } = this.platform;
     this.accessory
@@ -19,16 +23,40 @@ export class BaseAccessory {
       .setCharacteristic(Characteristic.Manufacturer, deviceInfo.extendedInfo.brand)
       .setCharacteristic(Characteristic.Model, deviceInfo.extendedInfo.model)
       .setCharacteristic(Characteristic.SerialNumber, deviceInfo.extendedInfo.prodNo);
+    this.init();
   }
 
-  protected generateServices<T extends typeof Service>(services: T[]) {
-    this.services = services.map(
-      service => this.accessory.getService(service as any) || this.accessory.addService(service as any),
-    );
+  protected generateServices(services: Record<string, GenerateServicesParams>) {
+    this.services = Object.entries(services).reduce<Record<string, Service>>((acc, [key, params]) => {
+      const existingService = this.accessory.getService(key);
+      if (existingService) {
+        acc[key] = existingService;
+      } else if ('displayName' in params) {
+        const { displayName, service } = params;
+        acc[key] = this.accessory.addService(service, displayName, key);
+      } else {
+        acc[key] = this.accessory.addService(params, this.accessory.displayName, key);
+      }
+      return acc;
+    }, {});
   }
 
   protected get devDigitalModelPropertiesMap() {
     return Object.fromEntries(this.accessory.context.devDigitalModel?.attributes?.map(item => [item.name, item]) ?? []);
+  }
+
+  protected get devProps() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    return new Proxy(this.devDigitalModelPropertiesMap, {
+      get(target, key) {
+        return Reflect.get(target, key)?.value;
+      },
+      set(target, key, value) {
+        self.sendCommands({ [key as string]: value });
+        return true;
+      },
+    }) as unknown as Record<string, string>;
   }
 
   protected get Characteristic() {
@@ -76,6 +104,10 @@ export class BaseAccessory {
   }
 
   onDevDigitalModelUpdate() {
+    // 暴露给子类
+  }
+
+  init() {
     // 暴露给子类
   }
 }

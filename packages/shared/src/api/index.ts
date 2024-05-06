@@ -5,7 +5,8 @@ import { URL } from 'url';
 
 import axios from 'axios';
 
-import { HttpError, getSn, sha256 } from '../utils';
+import { HttpError } from '../constants';
+import { getSn, inspectAndStringifyData, sha256 } from '../utils';
 
 import type {
   DevDigitalModel,
@@ -91,7 +92,7 @@ export class HaierApi {
       const body = config.data ? JSON.stringify(config.data) : '';
       const signStr = `${url.pathname}${url.search}${body}${APP_ID}${APP_KEY}${timestamp}`;
       config.headers.sign = sha256(signStr);
-      this.logger.debug('request:', url.toString(), config.data ? JSON.stringify(config.data) : undefined);
+      this.logger.debug('request:', url.toString(), config.data ? inspectAndStringifyData(config.data) : undefined);
       return config;
     });
     this.axios.interceptors.response.use(
@@ -103,7 +104,10 @@ export class HaierApi {
         return res;
       },
       err => {
-        this.logger.error('response error', err);
+        if (!(err instanceof HttpError)) {
+          this.logger.error('response error', err);
+        }
+        throw err;
       },
     );
   }

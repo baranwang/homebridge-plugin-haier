@@ -1,4 +1,4 @@
-import { PLATFORM_NAME } from '@hb-haier/shared';
+import { PLATFORM_NAME } from '@hb-haier/shared/constants';
 
 import { HaierHomebridgePlatform } from './platform';
 

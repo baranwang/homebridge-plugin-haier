@@ -1,20 +1,9 @@
 import { createHash } from 'crypto';
+import { inspect } from 'util';
 
 import { format } from 'date-fns';
 
-import type { AxiosResponse } from 'axios';
 import type { BinaryToTextEncoding } from 'crypto';
-
-export class HttpError extends Error {
-  name = 'HttpError';
-
-  constructor(resp: AxiosResponse<any>) {
-    super();
-    this.message = `${resp.config.url} - [${resp.data.retCode}]: ${JSON.stringify(resp.data.retInfo)}\n ${
-      resp.config.data
-    }`;
-  }
-}
 
 function isObject(obj: any) {
   return Object.prototype.toString.call(obj) === '[object Object]';
@@ -36,3 +25,12 @@ export const sha256 = hashFactory('sha256');
 
 export const getSn = (timestamp = Date.now()) =>
   `${format(timestamp, 'yyyyMMddHHmmss')}${Math.floor(Math.random() * 1000000)}`;
+
+/**
+ * 输出完整的Logger日志
+ * @param {unknown} data 序列化的数据
+ * @returns {string}
+ */
+export function inspectAndStringifyData(data: unknown): string {
+  return inspect(data, true, Infinity);
+}
