@@ -26,6 +26,13 @@
         "title": "Family ID",
         "type": "string",
         "required": true
+      },
+      "disabledDevices": {
+        "title": "Disabled Devices",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
       }
     }
   }

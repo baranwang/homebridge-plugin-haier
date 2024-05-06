@@ -1,0 +1,7 @@
+{
+  "placeholder.name": "Enter name",
+  "placeholder.username": "Enter username",
+  "placeholder.password": "Enter password",
+  "placeholder.familyId": "Select family",
+  "label.disabledDevices": "Disabled devices"
+}

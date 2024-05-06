@@ -5,13 +5,14 @@ import { useRequest } from 'ahooks';
 import RcForm from 'rc-field-form';
 import { Form } from 'react-bootstrap';
 
+import { CheckboxGroup } from './components/checkbox-group';
 import { FormField } from './components/form-field';
-import { Select } from './components/select';
 import { useDevices } from './hooks/use-devices';
 import { useFamilyList } from './hooks/use-family-list';
+import { useI18n } from './hooks/use-i18n';
 
 function App() {
-  const { data: i18n } = useRequest(() => window.homebridge.i18nGetTranslation());
+  const { i18n } = useI18n();
 
   const [form] = RcForm.useForm();
 
@@ -43,18 +44,18 @@ function App() {
         initialValue={PLATFORM_NAME}
         rules={[{ required: true }]}
       >
-        <Form.Control type="text" placeholder="Enter name" required />
+        <Form.Control type="text" placeholder={i18n?.['placeholder.name'] ?? 'Enter name'} required />
       </FormField>
       <FormField name="username" label={i18n?.['login.label_username'] ?? 'Username'} rules={[{ required: true }]}>
-        <Form.Control type="text" placeholder="Enter username" required />
+        <Form.Control type="text" placeholder={i18n?.['placeholder.username'] ?? 'Enter username'} required />
       </FormField>
       <FormField name="password" label={i18n?.['login.label_password'] ?? 'Password'} rules={[{ required: true }]}>
-        <Form.Control type="password" placeholder="Enter password" required />
+        <Form.Control type="password" placeholder={i18n?.['placeholder.password'] ?? 'Enter password'} required />
       </FormField>
       <FormField name="familyId" label={i18n?.['accessories.control.label_home'] ?? 'Family'} hidden={!familyList}>
         <Form.Control as="select" custom>
           <option value="" disabled>
-            Select a Family
+            {i18n?.['placeholder.familyId'] ?? 'Select a Family'}
           </option>
           {familyList?.map(item => (
             <option key={item.familyId} value={item.familyId}>
@@ -63,9 +64,8 @@ function App() {
           ))}
         </Form.Control>
       </FormField>
-      <FormField name="disabledDevices" label="Disabled Devices" hidden={!devices}>
-        <Select
-          mode="multiple"
+      <FormField name="disabledDevices" label={i18n?.['label.disabledDevices'] ?? 'Disabled Devices'} hidden={!devices}>
+        <CheckboxGroup
           options={devices?.map(item => ({
             label: `${item.extendedInfo.room} - ${item.baseInfo.deviceName}`,
             value: item.baseInfo.deviceId,
