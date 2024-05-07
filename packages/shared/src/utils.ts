@@ -34,3 +34,11 @@ export const getSn = (timestamp = Date.now()) =>
 export function inspectAndStringifyData(data: unknown): string {
   return inspect(data, true, Infinity);
 }
+
+export function safeJsonParse<T = unknown>(...args: Parameters<typeof JSON.parse>) {
+  try {
+    return JSON.parse(...args) as T;
+  } catch (error) {
+    return null;
+  }
+}

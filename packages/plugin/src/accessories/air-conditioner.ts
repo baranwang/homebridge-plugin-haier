@@ -1,3 +1,5 @@
+import { safeJsonParse } from '@hb-haier/shared';
+
 import { BaseAccessory } from './base';
 
 import type { CharacteristicProps, CharacteristicValue } from 'homebridge';
@@ -42,12 +44,12 @@ export class AirConditionerAccessory extends BaseAccessory {
       .getCharacteristic(TemperatureDisplayUnits)
       .onGet(this.getTemperatureDisplayUnits.bind(this));
 
-    if (this.devProps.indoorHumidity) {
+    if (this.deviceProps.indoorHumidity) {
       this.services.thermostat
         .getCharacteristic(CurrentRelativeHumidity)
         .onGet(this.getCurrentRelativeHumidity.bind(this));
     }
-    if (this.devProps.targetHumidity) {
+    if (this.deviceProps.targetHumidity) {
       this.services.thermostat
         .getCharacteristic(TargetRelativeHumidity)
         .onGet(this.getTargetRelativeHumidity.bind(this));
@@ -56,8 +58,7 @@ export class AirConditionerAccessory extends BaseAccessory {
   }
 
   private get targetTemperatureProps(): Partial<CharacteristicProps> {
-    const { minValue, maxValue, step } =
-      this.devDigitalModelPropertiesMap?.targetTemperature?.valueRange.dataStep ?? {};
+    const { minValue, maxValue, step } = this.deviceAttr?.targetTemperature?.valueRange.dataStep ?? {};
     return {
       minValue: minValue ? Number(minValue) : 10,
       maxValue: maxValue ? Number(maxValue) : 38,
@@ -66,18 +67,15 @@ export class AirConditionerAccessory extends BaseAccessory {
   }
 
   private get onOffStatus() {
-    const onOffStatus: boolean = JSON.parse(this.devProps.onOffStatus);
-    return onOffStatus;
+    return safeJsonParse<boolean>(this.deviceProps.onOffStatus);
   }
 
   private get currentTemperature() {
-    const indoorTemperature: number = JSON.parse(this.devProps.indoorTemperature);
-    return indoorTemperature;
+    return safeJsonParse<number>(this.deviceProps.indoorTemperature);
   }
 
   private get targetTemperature() {
-    const targetTemperature: number = JSON.parse(this.devProps.targetTemperature);
-    return targetTemperature;
+    return safeJsonParse<number>(this.deviceProps.targetTemperature);
   }
 
   get currentHeatingCoolingState() {
@@ -85,13 +83,16 @@ export class AirConditionerAccessory extends BaseAccessory {
     if (!this.onOffStatus) {
       return CurrentHeatingCoolingState.OFF;
     }
-    const mode: string = this.devProps.operationMode;
+    const mode: string = this.deviceProps.operationMode;
     switch (mode) {
       case '1':
         return CurrentHeatingCoolingState.COOL;
       case '4':
         return CurrentHeatingCoolingState.HEAT;
       default: {
+        if (!this.currentTemperature || !this.targetTemperature) {
+          return CurrentHeatingCoolingState.OFF;
+        }
         if (this.currentTemperature > this.targetTemperature) {
           return CurrentHeatingCoolingState.COOL;
         } else {
@@ -111,7 +112,7 @@ export class AirConditionerAccessory extends BaseAccessory {
     if (!this.onOffStatus) {
       return TargetHeatingCoolingState.OFF;
     }
-    const mode: string = this.devProps.operationMode;
+    const mode: string = this.deviceProps.operationMode;
     switch (mode) {
       case '1':
         return TargetHeatingCoolingState.COOL;
@@ -131,7 +132,7 @@ export class AirConditionerAccessory extends BaseAccessory {
     const { TargetHeatingCoolingState } = this.Characteristic;
 
     if (value === TargetHeatingCoolingState.OFF) {
-      this.devProps.onOffStatus = 'false';
+      this.deviceProps.onOffStatus = 'false';
       return;
     }
     const modeMap = {
@@ -167,15 +168,14 @@ export class AirConditionerAccessory extends BaseAccessory {
 
   async getTemperatureDisplayUnits() {
     await this.getDevDigitalModel();
-    if (this.devDigitalModelPropertiesMap.tempUnit?.value === '2') {
+    if (this.deviceAttr.tempUnit?.value === '2') {
       return this.Characteristic.TemperatureDisplayUnits.FAHRENHEIT;
     }
     return this.Characteristic.TemperatureDisplayUnits.CELSIUS;
   }
 
   get currentRelativeHumidity() {
-    const indoorHumidity: number = JSON.parse(this.devProps.indoorHumidity);
-    return indoorHumidity;
+    return safeJsonParse<number>(this.deviceProps.indoorHumidity);
   }
 
   async getCurrentRelativeHumidity() {
@@ -184,8 +184,7 @@ export class AirConditionerAccessory extends BaseAccessory {
   }
 
   get targetRelativeHumidity() {
-    const targetHumidity: number = JSON.parse(this.devProps.targetHumidity);
-    return targetHumidity;
+    return safeJsonParse<number>(this.deviceProps.targetHumidity);
   }
 
   async getTargetRelativeHumidity() {
@@ -218,10 +217,10 @@ export class AirConditionerAccessory extends BaseAccessory {
 
     this.services.thermostat.updateCharacteristic(TargetHeatingCoolingState, this.targetHeatingCoolingState);
 
-    if (this.devProps.indoorHumidity) {
+    if (this.deviceProps.indoorHumidity) {
       this.services.thermostat.updateCharacteristic(CurrentRelativeHumidity, this.currentRelativeHumidity);
     }
-    if (this.devProps.targetHumidity) {
+    if (this.deviceProps.targetHumidity) {
       this.services.thermostat.updateCharacteristic(TargetRelativeHumidity, this.targetRelativeHumidity);
     }
   }

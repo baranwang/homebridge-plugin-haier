@@ -69,7 +69,7 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
     const uuid = this.api.hap.uuid.generate(device.baseInfo.deviceId);
     const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
     if (existingAccessory) {
-      this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+      this.log.info('从缓存加载附件：', existingAccessory.displayName);
       existingAccessory.context = {
         deviceInfo: device,
       };
@@ -77,7 +77,7 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
       new AccessoryClass(this, existingAccessory);
     } else {
       const displayName = this.getDeviceName(device);
-      this.log.info('Adding new accessory:', displayName);
+      this.log.info('添加附件：', displayName);
       const accessory = new this.api.platformAccessory<HaierPlatformAccessoryContext>(displayName, uuid);
       accessory.context = {
         deviceInfo: device,
