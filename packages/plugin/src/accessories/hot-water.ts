@@ -1,3 +1,5 @@
+import { safeJsonParse } from '@hb-haier/shared';
+
 import { BaseAccessory } from './base';
 
 import type { CharacteristicProps, CharacteristicValue } from 'homebridge';
@@ -88,7 +90,7 @@ export class HotWaterAccessory extends BaseAccessory {
   }
 
   private get isOn() {
-    return this.deviceProps.onOffStatus === 'true';
+    return safeJsonParse<boolean>(this.deviceProps.onOffStatus);
   }
 
   private get currentHeatingCoolingState() {
@@ -103,12 +105,12 @@ export class HotWaterAccessory extends BaseAccessory {
   }
 
   async setTargetHeatingCoolingState(value: CharacteristicValue) {
-    this.deviceProps.onOffStatus = value === this.Characteristic.TargetHeatingCoolingState.OFF ? 'false' : 'true';
+    this.deviceProps.onOffStatus = (!(value === this.Characteristic.TargetHeatingCoolingState.OFF)).toString();
   }
 
   async getTargetTemperature() {
     await this.getDevDigitalModel();
-    return Number(this.deviceProps.targetTemp);
+    return safeJsonParse<number>(this.deviceProps.targetTemp);
   }
 
   setTargetTemperature(characteristicValue: CharacteristicValue) {
