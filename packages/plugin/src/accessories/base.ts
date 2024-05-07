@@ -1,6 +1,6 @@
 import type { HaierHomebridgePlatform } from '../platform';
 import type { HaierPlatformAccessory } from '../types';
-import type { DevDigitalModel } from '@hb-haier/shared';
+import type { DevDigitalModel, DevDigitalModelProperty } from '@hb-haier/shared';
 import type { Service } from 'homebridge';
 
 type GenerateServicesParams =
@@ -41,19 +41,26 @@ export class BaseAccessory {
     }, {});
   }
 
-  protected get devDigitalModelPropertiesMap() {
+  protected get deviceAttr() {
     return Object.fromEntries(this.accessory.context.devDigitalModel?.attributes?.map(item => [item.name, item]) ?? []);
   }
 
-  protected get devProps() {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-    return new Proxy(this.devDigitalModelPropertiesMap, {
-      get(target, key) {
-        return Reflect.get(target, key)?.value;
+  protected get deviceProps() {
+    const sendCommands = this.sendCommands.bind(this);
+    return new Proxy(this.deviceAttr, {
+      get(target, key, receiver) {
+        const attr = Reflect.get(target, key, receiver) as DevDigitalModelProperty | undefined;
+        return attr?.value;
       },
-      set(target, key, value) {
-        self.sendCommands({ [key as string]: value });
+      set(target, key, value, receiver) {
+        const attr = Reflect.get(target, key, receiver) as DevDigitalModelProperty | undefined;
+        if (!attr) {
+          return false;
+        }
+        if (!attr.writable) {
+          return false;
+        }
+        sendCommands({ [key as string]: value });
         return true;
       },
     }) as unknown as Record<string, string>;
@@ -87,7 +94,7 @@ export class BaseAccessory {
   protected async sendCommands(...commands: Record<string, unknown>[]) {
     commands.forEach(cmd => {
       Object.entries(cmd).forEach(([key, value]) => {
-        const { valueRange, desc: commandDescription } = this.devDigitalModelPropertiesMap[key] ?? {};
+        const { valueRange, desc: commandDescription } = this.deviceAttr?.[key] ?? {};
         let valueDescription = value;
         if (!valueRange) {
           return;
@@ -96,7 +103,13 @@ export class BaseAccessory {
           const valueItem = valueRange.dataList.find(item => item.data === value);
           valueDescription = valueItem?.desc ?? value;
         }
-        this.platform.log.info('设置', this.accessory.displayName, commandDescription, '为', valueDescription);
+        this.platform.log.success(
+          'Set',
+          `「${this.accessory.displayName}」`,
+          `[${commandDescription}]`,
+          '=>',
+          valueDescription,
+        );
       });
     });
     await this.platform.haierApi.sendCommands(this.accessory.context.deviceInfo.baseInfo.deviceId, ...commands);
