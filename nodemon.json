@@ -1,0 +1,10 @@
+{
+  "watch": ["dist", "homebridge-ui"],
+  "ext": "js",
+  "ignore": [],
+  "exec": "homebridge -U ./test/hb-config -D",
+  "signal": "SIGTERM",
+  "env": {
+    "NODE_OPTIONS": "--trace-warnings"
+  }
+}

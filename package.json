@@ -1,0 +1,58 @@
+{
+  "name": "homebridge-plugin-haier",
+  "displayName": "Haier",
+  "version": "2.0.0",
+  "description": "海尔智家 Homebridge 插件",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json",
+    "./homebridge-ui": "./homebridge-ui"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "rslib build",
+    "check": "biome check --write",
+    "dev": "rslib build --watch",
+    "format": "biome format --write"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/baranwang/homebridge-plugin-haier.git"
+  },
+  "bugs": {
+    "url": "https://github.com/baranwang/homebridge-plugin-haier/issues"
+  },
+  "homepage": "https://github.com/baranwang/homebridge-plugin-haier",
+  "engines": {
+    "node": "^18.20.4 || ^20.18.0 || ^22.10.0",
+    "homebridge": "^1.8.0 || ^2.0.0-beta.0"
+  },
+  "files": ["dist", "homebridge-ui", "config.schema.json", "CHANGELOG.md"],
+  "keywords": ["homebridge-plugin", "haier", "海尔"],
+  "dependencies": {
+    "@homebridge/plugin-ui-utils": "^2.0.0",
+    "axios": "^1.7.9",
+    "date-fns": "^4.1.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.2",
+    "@rsbuild/core": "^1.1.13",
+    "@rsbuild/plugin-react": "^1.1.0",
+    "@rslib/core": "^0.2.2",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "homebridge": "^1.8.5",
+    "nodemon": "^3.1.9",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.2"
+  }
+}
