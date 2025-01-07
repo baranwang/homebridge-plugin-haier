@@ -6,20 +6,22 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./package.json": "./package.json",
-    "./homebridge-ui": "./homebridge-ui"
+    "./homebridge-ui/*": "./homebridge-ui/*",
+    "./shared": {
+      "import": "./dist/shared.js",
+      "require": "./dist/shared.cjs"
+    }
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rslib build",
     "check": "biome check --write",
-    "dev": "rslib build --watch",
+    "dev": "NODE_ENV=development rslib build --watch",
     "format": "biome format --write"
   },
   "repository": {
@@ -38,8 +40,7 @@
   "keywords": ["homebridge-plugin", "haier", "海尔"],
   "dependencies": {
     "@homebridge/plugin-ui-utils": "^2.0.0",
-    "axios": "^1.7.9",
-    "date-fns": "^4.1.0"
+    "axios": "^1.7.9"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.2",
@@ -49,10 +50,21 @@
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
+    "ahooks": "^3.8.4",
+    "date-fns": "^4.1.0",
     "homebridge": "^1.8.5",
     "nodemon": "^3.1.9",
+    "rc-field-form": "^2.7.0",
+    "rc-select": "^14.16.4",
     "react": "^19.0.0",
+    "react-bootstrap": "^1.6.8",
     "react-dom": "^19.0.0",
     "typescript": "^5.7.2"
+  },
+  "overrides": {
+    "ahooks": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }
