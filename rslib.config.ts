@@ -1,22 +1,7 @@
-import { execSync } from 'node:child_process';
-import type { RsbuildPlugin } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { defineConfig, type LibConfig } from '@rslib/core';
 import pkg from './package.json';
 
-const pluginDevServer = (): RsbuildPlugin => {
-  return {
-    name: 'homebridge-dev-server',
-    setup: (api) => {
-      api.onAfterBuild(({ isWatch }) => {
-        if (isWatch) {
-          execSync('npm link', { cwd: api.context.rootPath });
-          execSync('nodemon', { stdio: 'inherit', cwd: api.context.rootPath });
-        }
-      });
-    },
-  };
-};
 
 const NODE_ENV = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -110,5 +95,4 @@ export default defineConfig({
       'process.env.NODE_ENV': JSON.stringify(NODE_ENV),
     },
   },
-  // plugins: [pluginDevServer()],
 });

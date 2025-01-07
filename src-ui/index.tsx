@@ -29,10 +29,16 @@ const App: React.FC<{
 
   const username = RcForm.useWatch('username', form);
   const password = RcForm.useWatch('password', form);
-
   const { familyList } = useFamilyList({ username, password });
+
   const familyId = RcForm.useWatch('familyId', form);
   const { devices } = useDevices(familyId);
+
+  const handleConfigUpdate = (configs: Partial<Settings>) => {
+    const newConfigs = pluginConfigs ? [...pluginConfigs] : [];
+    newConfigs[0] = { ...newConfigs[0], ...configs };
+    window.homebridge.updatePluginConfig(newConfigs);
+  }
 
   useEffect(() => {
     if (!devices?.length) {
@@ -62,16 +68,12 @@ const App: React.FC<{
       },
     );
     disabledDevicesForm.onChange((change) => {
-      const configs = pluginConfigs ? [...pluginConfigs] : [];
-      configs[0] = { ...configs[0], ...change };
-      window.homebridge.updatePluginConfig(configs);
+      handleConfigUpdate(change);
     });
-  }, [devices]);
+  }, [devices, pluginConfigs]);
 
   const handleValuesChange = (_: any, allValues: Settings) => {
-    const configs = pluginConfigs ? [...pluginConfigs] : [];
-    configs[0] = allValues;
-    window.homebridge.updatePluginConfig(configs);
+    handleConfigUpdate(allValues);
   };
 
   return (

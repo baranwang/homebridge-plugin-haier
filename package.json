@@ -20,8 +20,11 @@
   "module": "./dist/index.js",
   "scripts": {
     "build": "rslib build",
+    "build:watch": "NODE_ENV=development rslib build --watch",
     "check": "biome check --write",
-    "dev": "NODE_ENV=development rslib build --watch",
+    "dev": "concurrently \"npm run build:watch\" \"npm run watch\"",
+    "prewatch": "npm run build && npm link",
+    "watch": "nodemon",
     "format": "biome format --write"
   },
   "repository": {
@@ -36,26 +39,35 @@
     "node": "^18.20.4 || ^20.18.0 || ^22.10.0",
     "homebridge": "^1.8.0 || ^2.0.0-beta.0"
   },
-  "files": ["dist", "homebridge-ui", "config.schema.json", "CHANGELOG.md"],
-  "keywords": ["homebridge-plugin", "haier", "海尔"],
+  "files": [
+    "dist",
+    "homebridge-ui",
+    "config.schema.json",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "homebridge-plugin",
+    "haier",
+    "海尔"
+  ],
   "dependencies": {
     "@homebridge/plugin-ui-utils": "^2.0.0",
     "axios": "^1.7.9"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.2",
-    "@rsbuild/core": "^1.1.13",
     "@rsbuild/plugin-react": "^1.1.0",
     "@rslib/core": "^0.2.2",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "ahooks": "^3.8.4",
+    "concurrently": "^9.1.2",
     "date-fns": "^4.1.0",
     "homebridge": "^1.8.5",
+    "homebridge-config-ui-x": "^4.67.0",
     "nodemon": "^3.1.9",
     "rc-field-form": "^2.7.0",
-    "rc-select": "^14.16.4",
     "react": "^19.0.0",
     "react-bootstrap": "^1.6.8",
     "react-dom": "^19.0.0",
