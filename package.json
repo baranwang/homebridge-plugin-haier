@@ -19,13 +19,14 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "scripts": {
-    "build": "rslib build",
-    "build:watch": "NODE_ENV=development rslib build --watch",
+    "build": "cross-env NODE_ENV=production rslib build",
+    "build:watch": "cross-env NODE_ENV=development rslib build --watch",
     "check": "biome check --write",
     "dev": "concurrently \"npm run build:watch\" \"npm run watch\"",
     "prewatch": "npm run build && npm link",
     "watch": "nodemon",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "analysis": "cross-env NODE_ENV=production ANALYSIS=true rslib build"
   },
   "repository": {
     "type": "git",
@@ -57,12 +58,14 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.2",
     "@rsbuild/plugin-react": "^1.1.0",
+    "@rsdoctor/rspack-plugin": "^0.4.13",
     "@rslib/core": "^0.2.2",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "ahooks": "^3.8.4",
     "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
     "date-fns": "^4.1.0",
     "homebridge": "^1.8.5",
     "homebridge-config-ui-x": "^4.67.0",

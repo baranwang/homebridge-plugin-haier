@@ -1,11 +1,12 @@
 import { pluginReact } from '@rsbuild/plugin-react';
 import { defineConfig, type LibConfig } from '@rslib/core';
 import pkg from './package.json';
+import { RsdoctorRspackPlugin } from '@rsdoctor/rspack-plugin';
 
 
 const NODE_ENV = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
-const pluginShared: LibConfig = {
+const commonLibConfig: LibConfig = {
   syntax: 'es2021',
   source: {
     entry: {
@@ -18,9 +19,9 @@ const pluginShared: LibConfig = {
 export default defineConfig({
   mode: NODE_ENV,
   lib: [
-    // plugin
+    // ESM Plugin Configuration
     {
-      ...pluginShared,
+      ...commonLibConfig,
       id: 'plugin-esm',
       format: 'esm',
       shims: {
@@ -29,17 +30,18 @@ export default defineConfig({
         },
       }
     },
+    // CJS Plugin Configuration
     {
-      ...pluginShared,
+      ...commonLibConfig,
       id: 'plugin-cjs',
       format: 'cjs',
     },
-    // ui
+    // UI Renderer Configuration
     {
       id: 'ui-renderer',
       format: 'umd',
       autoExtension: false,
-      plugins: [pluginReact()],
+      plugins: [pluginReact(),],
       source: {
         entry: {
           index: './src-ui/index.tsx',
@@ -47,7 +49,6 @@ export default defineConfig({
       },
       output: {
         target: 'web',
-        minify: true,
         filename: {
           js: '[name].[contenthash:8].js',
         },
@@ -70,6 +71,7 @@ export default defineConfig({
         htmlPlugin: true,
       },
     },
+    // UI Server Configuration
     {
       id: 'ui-server',
       format: 'esm',
@@ -86,6 +88,7 @@ export default defineConfig({
     },
   ],
   output: {
+    minify: NODE_ENV === 'production',
     externals: {
       '@shared': `${pkg.name}/shared`,
     },
@@ -95,4 +98,17 @@ export default defineConfig({
       'process.env.NODE_ENV': JSON.stringify(NODE_ENV),
     },
   },
+  tools: {
+    bundlerChain: (chain) => {
+      if (process.env.ANALYSIS === 'true') {
+        chain.plugin('Rsdoctor').use(RsdoctorRspackPlugin, [
+          {
+            supports: {
+              generateTileGraph: true
+            }
+          },
+        ]);
+      }
+    },
+  }
 });
