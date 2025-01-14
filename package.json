@@ -1,7 +1,7 @@
 {
   "name": "homebridge-plugin-haier",
   "displayName": "Haier",
-  "version": "2.0.0",
+  "version": "1.6.0",
   "description": "海尔智家 Homebridge 插件",
   "type": "module",
   "exports": {
@@ -26,7 +26,9 @@
     "prewatch": "npm run build && npm link",
     "watch": "nodemon",
     "format": "biome format --write",
-    "analysis": "cross-env NODE_ENV=production ANALYSIS=true rslib build"
+    "analysis": "cross-env NODE_ENV=production ANALYSIS=true rslib build",
+    "prerelease": "npm run build",
+    "release": "changeset publish"
   },
   "repository": {
     "type": "git",
@@ -57,6 +59,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.2",
+    "@changesets/cli": "^2.27.11",
     "@rsbuild/plugin-react": "^1.1.0",
     "@rsdoctor/rspack-plugin": "^0.4.13",
     "@rslib/core": "^0.2.2",
