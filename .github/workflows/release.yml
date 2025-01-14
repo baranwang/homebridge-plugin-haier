@@ -24,7 +24,7 @@ jobs:
         id: changesets
         with:
           publish: npm run release
-          title: "chore: :package: version packages"
+          title: "chore: version packages"
           commit: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
