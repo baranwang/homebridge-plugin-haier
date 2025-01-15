@@ -1,4 +1,4 @@
-import { HaierApi } from '@shared';
+import { getSn, HaierApi, inspectToString } from '@shared';
 import type { DeviceInfo, HaierApiConfig } from '@shared';
 import { PLATFORM_NAME, PLUGIN_NAME } from '@shared';
 import type { API, Characteristic, DynamicPlatformPlugin, Logger, PlatformConfig, Service } from 'homebridge';
@@ -25,6 +25,7 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
 
     this.api.on('didFinishLaunching', () => {
       this.haierApi = new HaierApi(config as unknown as HaierApiConfig, api, log);
+      this.haierApi.contactWss()
       this.discoverDevices();
       this.discoveryInterval = setInterval(() => this.discoverDevices(), 2 * 60 * 1000);
     });

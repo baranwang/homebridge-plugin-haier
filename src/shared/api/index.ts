@@ -45,6 +45,46 @@ export class HaierApi {
     this.getTokenInfo();
   }
 
+  private _ws!: WebSocket;
+
+  private get ws() {
+    return this._ws;
+  }
+
+  private set ws(ws: WebSocket) {
+    this._ws = ws;
+    ws.addEventListener('message', (event) => {
+      const resp = safeJsonParse<{
+        topic: string;
+        content: Record<string, unknown>;
+      }>(event.data);
+      this.logger.debug('⬇️', inspectToString(resp));
+      switch (resp?.topic) {
+        case 'HeartBeatAck':
+          this.logger.debug('💓');
+          break;
+      
+        default:
+          break;
+      }
+    });
+    ws.addEventListener('error', (event) => {
+      this.logger.error('连接错误', event);
+    })
+    ws.addEventListener('close', (event) => {
+      this.logger.error('连接已关闭', event);
+    });
+
+    ws.addEventListener('open', () => {
+      setInterval(() => {
+        this.sendWsMessage('HeartBeat', {
+          sn: getSn(),
+          duration: 0,
+        })
+      }, 60 * 1000, this);
+    });
+  }
+
   private get storagePath(): string {
     const storagePath = path.resolve(this.api?.user.storagePath?.() ?? path.dirname(__dirname), '.hb-haier');
     if (!fs.existsSync(storagePath)) {
@@ -171,6 +211,38 @@ export class HaierApi {
         subSn: `${sn}:${index}`,
       })),
     });
+  }
+
+  private async getWssUrl() {
+    const resp = await this.axios.post<{
+      agAddr: string;
+      id: string;
+      name: string
+    }>('https://uws.haier.net/gmsWS/wsag/assign', {})
+    const url = new URL(resp.data.agAddr);
+    url.protocol = 'wss:';
+    url.pathname = '/userag';
+    const accessToken = await this.getAccessToken()
+    url.searchParams.set('token', accessToken);
+    url.searchParams.set('agClientId', this.clientId);
+    return url.toString();
+  }
+
+  async contactWss() {
+    const url = await this.getWssUrl()
+    if (this.ws) {
+      this.ws.close();
+    }
+    this.ws = new WebSocket(url);
+  }
+
+  sendWsMessage(topic: string, content: Record<string, unknown>) {
+    this.logger.debug('⬆️', 'topic', topic, 'content', inspectToString(content));
+    this.ws.send(JSON.stringify({
+      agClientId: this.clientId,
+      topic,
+      content,
+    }));
   }
 
   private setTokenInfo(): void {

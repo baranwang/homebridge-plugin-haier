@@ -7,8 +7,6 @@ export class FridgeAccessory extends BaseAccessory {
   async init() {
     await this.getDevDigitalModel();
 
-    console.log(inspectToString(this.devDigitalModelPropertiesMap));
-
     this.createTemperatureService(
       'refrigerator',
       '冷藏室',
