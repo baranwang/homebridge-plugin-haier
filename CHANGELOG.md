@@ -1,5 +1,11 @@
 # homebridge-plugin-haier
 
+## 2.2.0
+
+### Minor Changes
+
+- 5b073fe: 使用 WebSocket 增强性能
+
 ## 2.1.1
 
 ### Patch Changes
