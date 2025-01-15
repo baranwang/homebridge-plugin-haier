@@ -13,7 +13,7 @@ export function useFamilyList({ username, password }: { username?: string; passw
       debounceWait: 1000,
       onError: (error) => {
         window.homebridge.toast.error(error.message);
-      }
+      },
     },
   );
   useEffect(() => {

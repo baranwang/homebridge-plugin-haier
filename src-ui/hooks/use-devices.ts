@@ -20,7 +20,7 @@ export function useDevices(familyId?: string) {
       window.homebridge.hideSpinner();
     }
   }, [loading]);
-  
+
   return {
     devices,
   };

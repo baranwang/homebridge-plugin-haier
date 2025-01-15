@@ -38,7 +38,7 @@ const App: React.FC<{
     const newConfigs = pluginConfigs ? [...pluginConfigs] : [];
     newConfigs[0] = { ...newConfigs[0], ...configs };
     window.homebridge.updatePluginConfig(newConfigs);
-  }
+  };
 
   useEffect(() => {
     if (!devices?.length) {

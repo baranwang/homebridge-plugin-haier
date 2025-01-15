@@ -15,9 +15,18 @@ export abstract class BaseAccessory {
     readonly accessory: HaierPlatformAccessory,
   ) {
     const { deviceInfo } = this.accessory.context;
+
+    this.platform.haierApi.addListener('devDigitalModelUpdate', (deviceId, devDigitalModel) => {
+      if (deviceInfo.baseInfo.deviceId !== deviceId) {
+        return;
+      }
+      this.onDevDigitalModelUpdate(devDigitalModel);
+    });
+
     const { Characteristic, Service } = this.platform;
     this.accessory
-      .getService(Service.AccessoryInformation)?.setCharacteristic(Characteristic.Manufacturer, deviceInfo.extendedInfo.brand)
+      .getService(Service.AccessoryInformation)
+      ?.setCharacteristic(Characteristic.Manufacturer, deviceInfo.extendedInfo.brand)
       .setCharacteristic(Characteristic.Model, deviceInfo.extendedInfo.model)
       .setCharacteristic(Characteristic.SerialNumber, deviceInfo.extendedInfo.prodNo);
     this.init();
@@ -25,10 +34,10 @@ export abstract class BaseAccessory {
 
   abstract init(): void;
 
-  abstract onDevDigitalModelUpdate(): void;
+  abstract onDevDigitalModelUpdate(devDigitalModel: DevDigitalModel): void;
 
   protected setServices(key: string, service: typeof Service, name?: string) {
-    const existingService = this.accessory.getService(key)
+    const existingService = this.accessory.getService(key);
     if (existingService) {
       this.services[key] = existingService;
     } else {
@@ -80,7 +89,7 @@ export abstract class BaseAccessory {
         return null;
       }
       this.accessory.context.devDigitalModel = devDigitalModel;
-      this.onDevDigitalModelUpdate();
+
       return devDigitalModel;
     } catch (error) {
       this.platform.log.error('获取设备数据失败', error);
@@ -91,23 +100,22 @@ export abstract class BaseAccessory {
     }
   }
 
-  protected async sendCommands(...commands: Record<string, unknown>[]) {
-    for (const cmd of commands) {
-      for (const [key, value] of Object.entries(cmd)) {
+  protected sendCommands(...commands: Record<string, string>[]) {
+    commands.forEach((cmd) => {
+      Object.entries(cmd).forEach(([key, value]) => {
         const { valueRange, desc: commandDescription } = this.devDigitalModelPropertiesMap[key] ?? {};
         let valueDescription = value;
         if (!valueRange) {
-          continue;
+          return;
         }
         if (valueRange.type === 'LIST') {
           const valueItem = valueRange.dataList.find((item) => item.data === value);
           valueDescription = valueItem?.desc ?? value;
         }
         this.platform.log.info('设置', this.accessory.displayName, commandDescription, '为', valueDescription);
-      }
-    }
-    const resp = await this.platform.haierApi.sendCommands(this.accessory.context.deviceInfo.baseInfo.deviceId, ...commands);
-    await this.getDevDigitalModel();
-    return resp;
+      });
+    });
+
+    this.platform.haierApi.sendCommands(this.deviceInfo.baseInfo.deviceId, ...commands);
   }
 }

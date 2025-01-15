@@ -1,52 +1,51 @@
-
 export class BiMap<Key, Value> {
-  keyToValue = new Map<Key, Value>()
-  valueToKey = new Map<Value, Key>()
+  keyToValue = new Map<Key, Value>();
+  valueToKey = new Map<Value, Key>();
 
   constructor(entries?: [Key, Value][]) {
-    this.clear()
+    this.clear();
     if (entries) {
       for (const [key, value] of entries) {
-        this.set(key, value)
+        this.set(key, value);
       }
     }
   }
 
   set(key: Key, value: Value) {
-    this.keyToValue.set(key, value)
-    this.valueToKey.set(value, key)
+    this.keyToValue.set(key, value);
+    this.valueToKey.set(value, key);
   }
 
   get(key: Key): Value | undefined {
-    return this.keyToValue.get(key)
+    return this.keyToValue.get(key);
   }
 
   getKey(value: Value): Key | undefined {
-    return this.valueToKey.get(value)
+    return this.valueToKey.get(value);
   }
 
   delete(key: Key) {
-    const value = this.keyToValue.get(key)
-    this.keyToValue.delete(key)
+    const value = this.keyToValue.get(key);
+    this.keyToValue.delete(key);
     if (value !== undefined) {
-      this.valueToKey.delete(value)
+      this.valueToKey.delete(value);
     }
   }
 
   has(key: Key): boolean {
-    return this.keyToValue.has(key)
+    return this.keyToValue.has(key);
   }
 
   hasValue(value: Value): boolean {
-    return this.valueToKey.has(value)
+    return this.valueToKey.has(value);
   }
 
   clear() {
-    this.keyToValue.clear()
-    this.valueToKey.clear()
+    this.keyToValue.clear();
+    this.valueToKey.clear();
   }
 
   values() {
-    return this.keyToValue.values()
+    return this.keyToValue.values();
   }
 }
