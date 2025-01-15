@@ -2,7 +2,7 @@
   "watch": ["dist", "homebridge-ui"],
   "ext": "js",
   "ignore": [],
-  "exec": "homebridge -U ./test/hb-config  -I -D",
+  "exec": "homebridge -U ./test/hb-config -I -D",
   "signal": "SIGTERM",
   "env": {
     "NODE_OPTIONS": "--trace-warnings"

@@ -3,62 +3,85 @@ import { BiMap, inspectToString } from '@shared';
 import type { CharacteristicValue } from 'homebridge';
 import { BaseAccessory } from './base';
 
+const serviceConfig = {
+  refrigerator: {
+    displayName: '冷藏室',
+    currentTempKey: 'refrigeratorTemperatureC',
+    targetTempKey: 'refrigeratorTargetTempLevel',
+  },
+  freezer: {
+    displayName: '冷冻室',
+    currentTempKey: 'freezerTemperatureC',
+    targetTempKey: 'freezerTargetTempLevel',
+  },
+  vtRoom: {
+    displayName: '变温室',
+    currentTempKey: 'vtRoomTemperature',
+    targetTempKey: 'vtRoomTargetTempLevel',
+  },
+};
+
 export class FridgeAccessory extends BaseAccessory {
   async init() {
     await this.getDevDigitalModel();
 
-    this.createTemperatureService(
-      'refrigerator',
-      '冷藏室',
-      'refrigeratorTemperatureC',
-      'refrigeratorTargetTempLevel'
-    );
-
-    this.createTemperatureService(
-      'freezer',
-      '冷冻室',
-      'freezerTemperatureC',
-      'freezerTargetTempLevel'
-    );
-
-    this.createTemperatureService(
-      'vtRoom',
-      '变温室',
-      'vtRoomTemperature',
-      'vtRoomTargetTempLevel'
-    );
+    Object.entries(serviceConfig).forEach(([serviceName, { displayName, currentTempKey, targetTempKey }]) => {
+      this.createTemperatureService(serviceName, displayName, currentTempKey, targetTempKey);
+    });
   }
 
   getActive() {
     return this.deviceInfo.baseInfo.isOnline ? this.Characteristic.Active.ACTIVE : this.Characteristic.Active.INACTIVE;
   }
 
-  parseTemperature(temperatureStr?: string): number {
-    return temperatureStr ? Number.parseInt(temperatureStr, 10) : 0;
+  getCurrentHeaterCoolerState() {
+    return this.deviceInfo.baseInfo.isOnline
+      ? this.Characteristic.CurrentHeaterCoolerState.COOLING
+      : this.Characteristic.CurrentHeaterCoolerState.INACTIVE;
   }
 
-  onDevDigitalModelUpdate() { }
+  parseTemperature(temperatureStr?: string): number {
+    return temperatureStr ? Number.parseInt(temperatureStr) : 0;
+  }
 
-  createTemperatureService(serviceName: string,
-    displayName: string,
-    currentTempKey: string,
-    targetTempKey: string) {
+  onDevDigitalModelUpdate() {
+    Object.entries(serviceConfig).forEach(([serviceName, { currentTempKey, targetTempKey }]) => {
+      const service = this.services[serviceName];
+      if (!service) return;
+
+      const currentTempProperty = this.devDigitalModelPropertiesMap[currentTempKey];
+      const targetTempProperty = this.devDigitalModelPropertiesMap[targetTempKey];
+      if (!currentTempProperty || !targetTempProperty) return;
+      const temperatureMap = this.extractCelsiusDataMapping(targetTempProperty.valueRange.dataList);
+
+      service
+        .getCharacteristic(this.Characteristic.CurrentTemperature)
+        .updateValue(this.parseTemperature(currentTempProperty.value));
+      service
+        .getCharacteristic(this.Characteristic.CoolingThresholdTemperature)
+        .updateValue(temperatureMap.get(targetTempProperty.value) ?? 0);
+    });
+  }
+
+  createTemperatureService(serviceName: string, displayName: string, currentTempKey: string, targetTempKey: string) {
     const currentTempProperty = this.devDigitalModelPropertiesMap[currentTempKey];
     const targetTempProperty = this.devDigitalModelPropertiesMap[targetTempKey];
 
     if (!currentTempProperty || !targetTempProperty) return;
+    this.setServices(serviceName, this.platform.Service.HeaterCooler, displayName);
 
     const temperatureMap = this.extractCelsiusDataMapping(targetTempProperty.valueRange.dataList);
-
-    this.setServices(serviceName, this.platform.Service.HeaterCooler, displayName);
+    const targetTempValues = Array.from(temperatureMap.values());
+    const minValue = Math.min(...targetTempValues);
+    const maxValue = Math.max(...targetTempValues);
+    const minStep = this.calculateStep(targetTempValues);
     const service = this.services[serviceName];
 
-    service
-      .getCharacteristic(this.Characteristic.Active)
-      .onGet(this.getActive.bind(this));
+    service.getCharacteristic(this.Characteristic.Active).onGet(this.getActive.bind(this));
 
     service
       .getCharacteristic(this.Characteristic.CurrentHeaterCoolerState)
+      .onGet(this.getCurrentHeaterCoolerState.bind(this))
       .setValue(this.Characteristic.CurrentHeaterCoolerState.COOLING);
 
     service
@@ -68,28 +91,35 @@ export class FridgeAccessory extends BaseAccessory {
         maxValue: this.Characteristic.TargetHeaterCoolerState.COOL,
         validValues: [this.Characteristic.TargetHeaterCoolerState.COOL],
       })
+      .onGet(() => this.Characteristic.TargetHeaterCoolerState.COOL)
+      .onSet(() => {
+        // 冰箱没有开关机的功能，只有制冷
+        service
+          .getCharacteristic(this.Characteristic.TargetHeaterCoolerState)
+          .updateValue(this.Characteristic.TargetHeaterCoolerState.COOL);
+        service
+          .getCharacteristic(this.Characteristic.CurrentHeaterCoolerState)
+          .updateValue(this.Characteristic.CurrentHeaterCoolerState.COOLING);
+      })
       .setValue(this.Characteristic.TargetHeaterCoolerState.COOL);
 
     service
       .getCharacteristic(this.Characteristic.CurrentTemperature)
-      .setProps({
-        maxValue: Number.parseInt(currentTempProperty.valueRange.dataStep.maxValue),
-        minValue: Number.parseInt(currentTempProperty.valueRange.dataStep.minValue),
-        minStep: Number.parseInt(currentTempProperty.valueRange.dataStep.step),
-      })
       .onGet(() => this.parseTemperature(currentTempProperty.value));
 
     service
-      .getCharacteristic(this.Characteristic.TargetTemperature)
+      .getCharacteristic(this.Characteristic.CoolingThresholdTemperature)
       .setProps({
-        minValue: Math.min(...Array.from(temperatureMap.values())),
-        maxValue: Math.max(...Array.from(temperatureMap.values())),
+        minValue,
+        maxValue,
+        minStep,
+        validValues: targetTempValues,
       })
       .onGet(() => temperatureMap.get(targetTempProperty.value) ?? 0)
-      .onSet(async (value: CharacteristicValue) => {
-        const targetLevel = temperatureMap.getKey(Number.parseInt(value.toString(), 10));
+      .onSet((value) => {
+        const targetLevel = temperatureMap.getKey(Number.parseInt(value.toString()));
         if (targetLevel) {
-          await this.sendCommands({ [targetTempKey]: targetLevel });
+          this.sendCommands({ [targetTempKey]: targetLevel });
         }
       });
   }
@@ -97,7 +127,7 @@ export class FridgeAccessory extends BaseAccessory {
   private extractCelsiusDataMapping(dataList: DevDigitalModelProperty['valueRange']['dataList']) {
     const celsiusRegex = /(-?\d+)℃/;
     const mapping = new BiMap<string, number>();
-    dataList.forEach(item => {
+    dataList.forEach((item) => {
       const match = item.desc.match(celsiusRegex); // 匹配摄氏度
       if (match) {
         const celsius = match[1]; // 获取摄氏度的值
@@ -105,5 +135,17 @@ export class FridgeAccessory extends BaseAccessory {
       }
     });
     return mapping;
+  }
+
+  private calculateStep(targetTempValues: number[]) {
+    const step = Math.min(
+      ...targetTempValues.map((value, index, array) => {
+        if (index === 0) {
+          return array[index + 1] - value;
+        }
+        return value - array[index - 1];
+      }),
+    );
+    return step;
   }
 }

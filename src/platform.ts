@@ -23,11 +23,11 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
   ) {
     this.log.debug('平台初始化完成', this.config.name);
 
-    this.api.on('didFinishLaunching', () => {
+    this.api.on('didFinishLaunching', async () => {
       this.haierApi = new HaierApi(config as unknown as HaierApiConfig, api, log);
-      this.haierApi.contactWss()
+      await this.haierApi.contactWss()
       this.discoverDevices();
-      this.discoveryInterval = setInterval(() => this.discoverDevices(), 2 * 60 * 1000);
+      this.discoveryInterval = setInterval(() => this.discoverDevices(), 10 * 60 * 1000);
     });
 
     this.api.on('shutdown', () => {
@@ -47,11 +47,13 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
       return;
     }
 
-    this.haierApi.getDevicesByFamilyId(familyId).then((devices) => {
-      for (const device of devices) {
-        if (!disabledDevices.includes(device.baseInfo.deviceId)) {
-          this.handleDevice(device);
-        }
+    this.haierApi.getDevicesByFamilyId(familyId).then(async (devices) => {
+      const resp = await Promise.allSettled(
+        devices.filter(device => !disabledDevices.includes(device.baseInfo.deviceId)).map((device) => this.handleDevice(device))
+      )
+      const deviceIds = resp.filter(item => item.status === 'fulfilled').map(item => item.value).filter(item => typeof item === 'string')
+      if (deviceIds.length) {
+        this.haierApi.subscribeDevices(deviceIds)
       }
     });
   }
@@ -71,7 +73,8 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
       );
       return;
     }
-    const uuid = this.api.hap.uuid.generate(device.baseInfo.deviceId);
+    const { deviceId } = device.baseInfo
+    const uuid = this.api.hap.uuid.generate(deviceId);
     const existingAccessory = this.accessories.find((accessory) => accessory.UUID === uuid);
     if (existingAccessory) {
       this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
@@ -90,6 +93,7 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
       new AccessoryClass(this, accessory);
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }
+    return deviceId
   }
 
   private isDeviceIneligible(device: DeviceInfo): boolean {
