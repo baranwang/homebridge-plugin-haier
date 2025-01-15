@@ -86,6 +86,7 @@ export class FridgeAccessory extends BaseAccessory {
 
     service
       .getCharacteristic(this.Characteristic.TargetHeaterCoolerState)
+      .setValue(this.Characteristic.TargetHeaterCoolerState.COOL)
       .setProps({
         minValue: this.Characteristic.TargetHeaterCoolerState.COOL,
         maxValue: this.Characteristic.TargetHeaterCoolerState.COOL,
@@ -109,6 +110,7 @@ export class FridgeAccessory extends BaseAccessory {
 
     service
       .getCharacteristic(this.Characteristic.CoolingThresholdTemperature)
+      .setValue(temperatureMap.get(targetTempProperty.value) ?? 0)
       .setProps({
         minValue,
         maxValue,
