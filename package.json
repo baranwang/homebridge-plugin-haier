@@ -42,17 +42,8 @@
     "node": "^18.20.4 || ^20.18.0 || ^22.10.0",
     "homebridge": "^1.8.0 || ^2.0.0-beta.0"
   },
-  "files": [
-    "dist",
-    "homebridge-ui",
-    "config.schema.json",
-    "CHANGELOG.md"
-  ],
-  "keywords": [
-    "homebridge-plugin",
-    "haier",
-    "海尔"
-  ],
+  "files": ["dist", "homebridge-ui", "config.schema.json", "CHANGELOG.md"],
+  "keywords": ["homebridge-plugin", "haier", "海尔"],
   "dependencies": {
     "@homebridge/plugin-ui-utils": "^2.0.0",
     "axios": "^1.7.9",

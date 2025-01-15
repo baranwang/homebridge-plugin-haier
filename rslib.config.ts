@@ -3,7 +3,6 @@ import { defineConfig, type LibConfig } from '@rslib/core';
 import pkg from './package.json';
 import { RsdoctorRspackPlugin } from '@rsdoctor/rspack-plugin';
 
-
 const NODE_ENV = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
 const commonLibConfig: LibConfig = {
@@ -28,7 +27,7 @@ export default defineConfig({
         esm: {
           __dirname: true,
         },
-      }
+      },
     },
     // CJS Plugin Configuration
     {
@@ -41,7 +40,7 @@ export default defineConfig({
       id: 'ui-renderer',
       format: 'umd',
       autoExtension: false,
-      plugins: [pluginReact(),],
+      plugins: [pluginReact()],
       source: {
         entry: {
           index: './src-ui/index.tsx',
@@ -104,11 +103,11 @@ export default defineConfig({
         chain.plugin('Rsdoctor').use(RsdoctorRspackPlugin, [
           {
             supports: {
-              generateTileGraph: true
-            }
+              generateTileGraph: true,
+            },
           },
         ]);
       }
     },
-  }
+  },
 });
