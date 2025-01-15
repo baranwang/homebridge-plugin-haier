@@ -25,8 +25,6 @@ export const sha256 = hashFactory('sha256');
 export const getSn = (timestamp = Date.now()) =>
   `${format(timestamp, 'yyyyMMddHHmmss')}${Math.floor(Math.random() * 1000000)}`;
 
-export const inspectAndStringifyData = (data: unknown): string => inspect(data, true, Number.POSITIVE_INFINITY);
-
 export const safeJsonParse = <T = unknown>(...args: Parameters<typeof JSON.parse>) => {
   try {
     return JSON.parse(...args) as T;
@@ -34,6 +32,8 @@ export const safeJsonParse = <T = unknown>(...args: Parameters<typeof JSON.parse
     return null;
   }
 };
+
+export const inspectToString = (data: unknown) => inspect(data, false, Number.POSITIVE_INFINITY, true);
 
 export class HttpError extends Error {
   name = 'HttpError';

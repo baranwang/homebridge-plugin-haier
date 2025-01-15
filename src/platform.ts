@@ -2,7 +2,7 @@ import { HaierApi } from '@shared';
 import type { DeviceInfo, HaierApiConfig } from '@shared';
 import { PLATFORM_NAME, PLUGIN_NAME } from '@shared';
 import type { API, Characteristic, DynamicPlatformPlugin, Logger, PlatformConfig, Service } from 'homebridge';
-import { AirConditionerAccessory, HotWaterAccessory } from './accessories';
+import { AirConditionerAccessory, HotWaterAccessory, FridgeAccessory } from './accessories';
 import type { HaierPlatformAccessory, HaierPlatformAccessoryContext } from './types';
 
 export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
@@ -24,14 +24,12 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
     this.log.debug('平台初始化完成', this.config.name);
 
     this.api.on('didFinishLaunching', () => {
-      this.log.debug('Executed didFinishLaunching callback');
       this.haierApi = new HaierApi(config as unknown as HaierApiConfig, api, log);
       this.discoverDevices();
       this.discoveryInterval = setInterval(() => this.discoverDevices(), 2 * 60 * 1000);
     });
 
     this.api.on('shutdown', () => {
-      this.log.debug('Executed shutdown callback');
       this.discoveryInterval && clearInterval(this.discoveryInterval);
     });
   }
@@ -110,10 +108,10 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
     switch (deviceInfo.extendedInfo.categoryGrouping) {
       case '空调':
         return AirConditionerAccessory;
-
       case '热水卫浴':
         return HotWaterAccessory;
-
+      case '冰冷':
+        return FridgeAccessory
       default:
         return undefined;
     }

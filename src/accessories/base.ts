@@ -3,10 +3,12 @@ import type { HaierPlatformAccessory } from '../types';
 import type { DevDigitalModel } from '@shared';
 import type { Service } from 'homebridge';
 
-export class BaseAccessory {
-  public services: Service[] = [];
+export abstract class BaseAccessory {
+  public services: Record<string, Service> = {};
 
-  private devDigitalModelPromise?: Promise<DevDigitalModel>;
+  private devDigitalModelPromise?: Promise<DevDigitalModel | null>;
+
+  private isFetchingDevDigitalModel = false;
 
   constructor(
     readonly platform: HaierHomebridgePlatform,
@@ -15,16 +17,31 @@ export class BaseAccessory {
     const { deviceInfo } = this.accessory.context;
     const { Characteristic, Service } = this.platform;
     this.accessory
-      .getService(Service.AccessoryInformation)!
-      .setCharacteristic(Characteristic.Manufacturer, deviceInfo.extendedInfo.brand)
+      .getService(Service.AccessoryInformation)?.setCharacteristic(Characteristic.Manufacturer, deviceInfo.extendedInfo.brand)
       .setCharacteristic(Characteristic.Model, deviceInfo.extendedInfo.model)
       .setCharacteristic(Characteristic.SerialNumber, deviceInfo.extendedInfo.prodNo);
+    this.init();
   }
 
-  protected generateServices<T extends typeof Service>(services: T[]) {
-    this.services = services.map(
-      (service) => this.accessory.getService(service as any) || this.accessory.addService(service as any),
-    );
+  abstract init(): void;
+
+  abstract onDevDigitalModelUpdate(): void;
+
+  protected setServices(key: string, service: typeof Service, name?: string) {
+    const existingService = this.accessory.getService(key)
+    if (existingService) {
+      this.services[key] = existingService;
+    } else {
+      let serviceName = this.accessory.displayName;
+      if (name) {
+        serviceName += ` - ${name}`;
+      }
+      this.services[key] = this.accessory.addService(service, serviceName, key);
+    }
+  }
+
+  protected get deviceInfo() {
+    return this.accessory.context.deviceInfo;
   }
 
   protected get devDigitalModelPropertiesMap() {
@@ -38,15 +55,26 @@ export class BaseAccessory {
   }
 
   protected async getDevDigitalModel() {
-    const { deviceId, isOnline } = this.accessory.context.deviceInfo.baseInfo;
+    const { deviceId, isOnline } = this.deviceInfo.baseInfo;
     if (!isOnline) {
       this.platform.log.warn('设备', this.accessory.displayName, '离线');
     }
+
+    if (this.isFetchingDevDigitalModel) {
+      return this.devDigitalModelPromise ?? this.accessory.context.devDigitalModel;
+    }
+
+    this.isFetchingDevDigitalModel = true;
+
     try {
       if (!this.devDigitalModelPromise) {
         this.devDigitalModelPromise = this.platform.haierApi.getDevDigitalModel(deviceId);
       }
       const devDigitalModel = await this.devDigitalModelPromise;
+      if (!devDigitalModel) {
+        this.platform.log.error('设备数据为空', this.accessory.displayName);
+        return null;
+      }
       this.accessory.context.devDigitalModel = devDigitalModel;
       this.onDevDigitalModelUpdate();
       return devDigitalModel;
@@ -54,6 +82,7 @@ export class BaseAccessory {
       this.platform.log.error('获取设备数据失败', error);
       return this.accessory.context.devDigitalModel;
     } finally {
+      this.isFetchingDevDigitalModel = false;
       this.devDigitalModelPromise = undefined;
     }
   }
@@ -73,11 +102,8 @@ export class BaseAccessory {
         this.platform.log.info('设置', this.accessory.displayName, commandDescription, '为', valueDescription);
       }
     }
-    await this.platform.haierApi.sendCommands(this.accessory.context.deviceInfo.baseInfo.deviceId, ...commands);
+    const resp = await this.platform.haierApi.sendCommands(this.accessory.context.deviceInfo.baseInfo.deviceId, ...commands);
     await this.getDevDigitalModel();
-  }
-
-  onDevDigitalModelUpdate() {
-    // 暴露给子类
+    return resp;
   }
 }

@@ -1,16 +1,9 @@
-import { BaseAccessory } from './base';
-import type { HaierPlatformAccessory } from '../types';
 import type { CharacteristicProps, CharacteristicValue } from 'homebridge';
-import type { HaierHomebridgePlatform } from '../platform';
+import { BaseAccessory } from './base';
 
 export class AirConditionerAccessory extends BaseAccessory {
-  constructor(platform: HaierHomebridgePlatform, accessory: HaierPlatformAccessory) {
-    super(platform, accessory);
-    this.init();
-  }
-
   async init() {
-    this.generateServices([this.platform.Service.Thermostat]);
+    this.setServices('thermostat', this.platform.Service.Thermostat)
 
     await this.getDevDigitalModel();
 
@@ -25,34 +18,34 @@ export class AirConditionerAccessory extends BaseAccessory {
     } = this.Characteristic;
 
     //#region Thermostat
-    this.services[0].getCharacteristic(CurrentHeatingCoolingState).onGet(this.getCurrentHeatingCoolingState.bind(this));
+    this.services.thermostat.getCharacteristic(CurrentHeatingCoolingState).onGet(this.getCurrentHeatingCoolingState.bind(this));
 
-    this.services[0]
+    this.services.thermostat
       .getCharacteristic(TargetHeatingCoolingState)
       .onGet(this.getTargetHeatingCoolingState.bind(this))
       .onSet(this.setTargetHeatingCoolingState.bind(this));
 
-    this.services[0].getCharacteristic(CurrentTemperature).onGet(this.getCurrentTemperature.bind(this));
+    this.services.thermostat.getCharacteristic(CurrentTemperature).onGet(this.getCurrentTemperature.bind(this));
 
-    this.services[0]
+    this.services.thermostat
       .getCharacteristic(TargetTemperature)
       .onGet(this.getTargetTemperature.bind(this))
       .onSet(this.setTargetTemperature.bind(this))
       .setProps(this.targetTemperatureProps);
 
-    this.services[0].getCharacteristic(TemperatureDisplayUnits).onGet(this.getTemperatureDisplayUnits.bind(this));
+    this.services.thermostat.getCharacteristic(TemperatureDisplayUnits).onGet(this.getTemperatureDisplayUnits.bind(this));
 
     if (this.devDigitalModelPropertiesMap.indoorHumidity) {
-      this.services[0].getCharacteristic(CurrentRelativeHumidity).onGet(this.getCurrentRelativeHumidity.bind(this));
+      this.services.thermostat.getCharacteristic(CurrentRelativeHumidity).onGet(this.getCurrentRelativeHumidity.bind(this));
     }
     if (this.devDigitalModelPropertiesMap.targetHumidity) {
-      this.services[0].getCharacteristic(TargetRelativeHumidity).onGet(this.getTargetRelativeHumidity.bind(this));
+      this.services.thermostat.getCharacteristic(TargetRelativeHumidity).onGet(this.getTargetRelativeHumidity.bind(this));
     }
     //#endregion
   }
 
   onDevDigitalModelUpdate() {
-    this.services[0]?.getCharacteristic(this.Characteristic.TargetTemperature).setProps(this.targetTemperatureProps);
+    this.services.thermostat?.getCharacteristic(this.Characteristic.TargetTemperature).setProps(this.targetTemperatureProps);
   }
 
   private get targetTemperatureProps(): Partial<CharacteristicProps> {

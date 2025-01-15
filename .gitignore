@@ -14,3 +14,4 @@ homebridge-ui/
 .idea
 
 test/hb-config
+.hb-haier/

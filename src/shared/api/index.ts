@@ -5,7 +5,7 @@ import { URL } from 'node:url';
 
 import axios from 'axios';
 
-import { HttpError, getSn, sha256 } from '../utils';
+import { HttpError, getSn, inspectToString, safeJsonParse, sha256 } from '../utils';
 
 import type {
   DevDigitalModel,
@@ -103,7 +103,7 @@ export class HaierApi {
       const signStr = `${url.pathname}${url.search}${body}${APP_CONFIG.ID}${APP_CONFIG.KEY}${timestamp}`;
       config.headers.sign = sha256(signStr);
 
-      this.logger.debug('Request:', url.toString(), config.data ? JSON.stringify(config.data) : undefined);
+      this.logger.debug('Request:', url.toString(), config.data ? inspectToString(config.data) : undefined);
       return config;
     });
 
@@ -157,7 +157,7 @@ export class HaierApi {
         deviceInfoList: [{ deviceId }],
       },
     );
-    return JSON.parse(res.data.detailInfo[deviceId]) as DevDigitalModel;
+    return safeJsonParse<DevDigitalModel>(res.data.detailInfo[deviceId]);
   }
 
   async sendCommands(deviceId: string, ...commands: Record<string, unknown>[]) {

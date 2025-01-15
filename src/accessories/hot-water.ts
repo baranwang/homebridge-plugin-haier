@@ -1,25 +1,18 @@
-import { BaseAccessory } from './base';
-import type { HaierPlatformAccessory } from '../types';
 import type { CharacteristicProps, CharacteristicValue } from 'homebridge';
-import type { HaierHomebridgePlatform } from '../platform';
+import { BaseAccessory } from './base';
 
 export class HotWaterAccessory extends BaseAccessory {
-  constructor(platform: HaierHomebridgePlatform, accessory: HaierPlatformAccessory) {
-    super(platform, accessory);
-    this.init();
-  }
-
   async init() {
-    this.generateServices([this.platform.Service.Thermostat]);
+    this.setServices('thermostat', this.platform.Service.Thermostat)
 
     await this.getDevDigitalModel();
 
     //#region Thermostat
-    this.services[0]
+    this.services.thermostat
       .getCharacteristic(this.Characteristic.CurrentHeatingCoolingState)
       .onGet(this.getCurrentHeatingCoolingState.bind(this));
 
-    this.services[0]
+    this.services.thermostat
       .getCharacteristic(this.Characteristic.TargetHeatingCoolingState)
       .onGet(this.getCurrentHeatingCoolingState.bind(this)) // 与 CurrentHeatingCoolingState 保持一致
       .onSet(this.setTargetHeatingCoolingState.bind(this))
@@ -30,20 +23,24 @@ export class HotWaterAccessory extends BaseAccessory {
         ],
       });
 
-    this.services[0]
+    this.services.thermostat
       .getCharacteristic(this.Characteristic.CurrentTemperature)
       .onGet(this.getTargetTemperature.bind(this)); // 与 TargetTemperature 保持一致
 
-    this.services[0]
+    this.services.thermostat
       .getCharacteristic(this.Characteristic.TargetTemperature)
       .onGet(this.getTargetTemperature.bind(this))
       .onSet(this.setTargetTemperature.bind(this))
       .setProps(this.targetTemperatureProps);
 
-    this.services[0]
+    this.services.thermostat
       .getCharacteristic(this.Characteristic.TemperatureDisplayUnits)
       .onGet(() => this.Characteristic.TemperatureDisplayUnits.CELSIUS);
     //#endregion
+  }
+
+  onDevDigitalModelUpdate() {
+    this.services.thermostat?.getCharacteristic(this.Characteristic.TargetTemperature).setProps(this.targetTemperatureProps);
   }
 
   private get onOffStatus() {
