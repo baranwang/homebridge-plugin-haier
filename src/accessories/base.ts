@@ -1,6 +1,6 @@
 import type { HaierHomebridgePlatform } from '../platform';
 import type { HaierPlatformAccessory } from '../types';
-import type { DevDigitalModel } from '@shared';
+import { safeJsonParse, type DevDigitalModel, type DevDigitalModelProperty } from '@shared';
 import type { Service } from 'homebridge';
 
 export abstract class BaseAccessory {
@@ -40,18 +40,22 @@ export abstract class BaseAccessory {
     }
   }
 
+  protected get Characteristic() {
+    return this.platform.Characteristic;
+  }
+
   protected get deviceInfo() {
     return this.accessory.context.deviceInfo;
   }
 
-  protected get devDigitalModelPropertiesMap() {
+  protected get devDigitalModelPropertiesMap(): Record<string, DevDigitalModelProperty | undefined> {
     return Object.fromEntries(
       this.accessory.context.devDigitalModel?.attributes?.map((item) => [item.name, item]) ?? [],
     );
   }
 
-  protected get Characteristic() {
-    return this.platform.Characteristic;
+  protected getPropertyValue<T>(property: string, defaultValue?: T): T | null {
+    return safeJsonParse<T>(this.devDigitalModelPropertiesMap[property]?.value, defaultValue);
   }
 
   protected async getDevDigitalModel() {

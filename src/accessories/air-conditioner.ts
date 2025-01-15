@@ -17,29 +17,31 @@ export class AirConditionerAccessory extends BaseAccessory {
       TargetRelativeHumidity,
     } = this.Characteristic;
 
-    //#region Thermostat
-    this.services.thermostat.getCharacteristic(CurrentHeatingCoolingState).onGet(this.getCurrentHeatingCoolingState.bind(this));
+    const thermostatService = this.services.thermostat;
 
-    this.services.thermostat
+    //#region Thermostat
+    thermostatService.getCharacteristic(CurrentHeatingCoolingState).onGet(this.getCurrentHeatingCoolingState.bind(this));
+
+    thermostatService
       .getCharacteristic(TargetHeatingCoolingState)
       .onGet(this.getTargetHeatingCoolingState.bind(this))
       .onSet(this.setTargetHeatingCoolingState.bind(this));
 
-    this.services.thermostat.getCharacteristic(CurrentTemperature).onGet(this.getCurrentTemperature.bind(this));
+    thermostatService.getCharacteristic(CurrentTemperature).onGet(this.getCurrentTemperature.bind(this));
 
-    this.services.thermostat
+    thermostatService
       .getCharacteristic(TargetTemperature)
+      .setProps(this.targetTemperatureProps)
       .onGet(this.getTargetTemperature.bind(this))
       .onSet(this.setTargetTemperature.bind(this))
-      .setProps(this.targetTemperatureProps);
 
-    this.services.thermostat.getCharacteristic(TemperatureDisplayUnits).onGet(this.getTemperatureDisplayUnits.bind(this));
+    thermostatService.getCharacteristic(TemperatureDisplayUnits).onGet(this.getTemperatureDisplayUnits.bind(this));
 
     if (this.devDigitalModelPropertiesMap.indoorHumidity) {
-      this.services.thermostat.getCharacteristic(CurrentRelativeHumidity).onGet(this.getCurrentRelativeHumidity.bind(this));
+      thermostatService.getCharacteristic(CurrentRelativeHumidity).onGet(this.getCurrentRelativeHumidity.bind(this));
     }
     if (this.devDigitalModelPropertiesMap.targetHumidity) {
-      this.services.thermostat.getCharacteristic(TargetRelativeHumidity).onGet(this.getTargetRelativeHumidity.bind(this));
+      thermostatService.getCharacteristic(TargetRelativeHumidity).onGet(this.getTargetRelativeHumidity.bind(this));
     }
     //#endregion
   }
@@ -52,25 +54,22 @@ export class AirConditionerAccessory extends BaseAccessory {
     const { minValue, maxValue, step } =
       this.devDigitalModelPropertiesMap?.targetTemperature?.valueRange.dataStep ?? {};
     return {
-      minValue: minValue ? Number(minValue) : 10,
-      maxValue: maxValue ? Number(maxValue) : 38,
-      minStep: step ? Number(step) : 0.1,
+      minValue: Number.parseFloat(minValue ?? '10'),
+      maxValue: Number.parseFloat(maxValue ?? '38'),
+      minStep: Number.parseFloat(step ?? '0.1'),
     };
   }
 
   private get onOffStatus() {
-    const onOffStatus: boolean = JSON.parse(this.devDigitalModelPropertiesMap.onOffStatus.value);
-    return onOffStatus;
+    return this.getPropertyValue<boolean>('onOffStatus', false);
   }
 
   private get currentTemperature() {
-    const indoorTemperature: number = JSON.parse(this.devDigitalModelPropertiesMap.indoorTemperature.value);
-    return indoorTemperature;
+    return this.getPropertyValue<number>('indoorTemperature');
   }
 
   private get targetTemperature() {
-    const targetTemperature: number = JSON.parse(this.devDigitalModelPropertiesMap.targetTemperature.value);
-    return targetTemperature;
+    return this.getPropertyValue<number>('targetTemperature');
   }
 
   async getCurrentHeatingCoolingState() {
@@ -79,14 +78,13 @@ export class AirConditionerAccessory extends BaseAccessory {
     if (!this.onOffStatus) {
       return CurrentHeatingCoolingState.OFF;
     }
-    const mode: string = this.devDigitalModelPropertiesMap.operationMode.value;
-    switch (mode) {
+    switch (this.devDigitalModelPropertiesMap.operationMode?.value) {
       case '1':
         return CurrentHeatingCoolingState.COOL;
       case '4':
         return CurrentHeatingCoolingState.HEAT;
       default: {
-        if (this.currentTemperature > this.targetTemperature) {
+        if (this.currentTemperature ?? 0 > (this.targetTemperature ?? 0)) {
           return CurrentHeatingCoolingState.COOL;
         }
         return CurrentHeatingCoolingState.HEAT;
@@ -100,8 +98,7 @@ export class AirConditionerAccessory extends BaseAccessory {
     if (!this.onOffStatus) {
       return TargetHeatingCoolingState.OFF;
     }
-    const mode: string = this.devDigitalModelPropertiesMap.operationMode.value;
-    switch (mode) {
+    switch (this.devDigitalModelPropertiesMap.operationMode?.value) {
       case '1':
         return TargetHeatingCoolingState.COOL;
       case '4':
@@ -159,13 +156,11 @@ export class AirConditionerAccessory extends BaseAccessory {
 
   async getCurrentRelativeHumidity() {
     await this.getDevDigitalModel();
-    const indoorHumidity: number = JSON.parse(this.devDigitalModelPropertiesMap.indoorHumidity.value);
-    return indoorHumidity;
+    return this.getPropertyValue<number>('indoorHumidity');
   }
 
   async getTargetRelativeHumidity() {
     await this.getDevDigitalModel();
-    const targetHumidity: number = JSON.parse(this.devDigitalModelPropertiesMap.targetHumidity.value);
-    return targetHumidity;
+    return this.getPropertyValue<number>('targetHumidity');
   }
 }

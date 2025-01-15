@@ -1,5 +1,6 @@
 import type { CharacteristicProps, CharacteristicValue } from 'homebridge';
 import { BaseAccessory } from './base';
+import { safeJsonParse } from '@shared';
 
 export class HotWaterAccessory extends BaseAccessory {
   async init() {
@@ -14,14 +15,14 @@ export class HotWaterAccessory extends BaseAccessory {
 
     this.services.thermostat
       .getCharacteristic(this.Characteristic.TargetHeatingCoolingState)
-      .onGet(this.getCurrentHeatingCoolingState.bind(this)) // 与 CurrentHeatingCoolingState 保持一致
-      .onSet(this.setTargetHeatingCoolingState.bind(this))
       .setProps({
         validValues: [
           this.Characteristic.TargetHeatingCoolingState.OFF,
           this.Characteristic.TargetHeatingCoolingState.HEAT,
         ],
-      });
+      })
+      .onGet(this.getCurrentHeatingCoolingState.bind(this)) // 与 CurrentHeatingCoolingState 保持一致
+      .onSet(this.setTargetHeatingCoolingState.bind(this))
 
     this.services.thermostat
       .getCharacteristic(this.Characteristic.CurrentTemperature)
@@ -29,9 +30,9 @@ export class HotWaterAccessory extends BaseAccessory {
 
     this.services.thermostat
       .getCharacteristic(this.Characteristic.TargetTemperature)
+      .setProps({ ...this.targetTemperatureProps })
       .onGet(this.getTargetTemperature.bind(this))
       .onSet(this.setTargetTemperature.bind(this))
-      .setProps(this.targetTemperatureProps);
 
     this.services.thermostat
       .getCharacteristic(this.Characteristic.TemperatureDisplayUnits)
@@ -40,24 +41,23 @@ export class HotWaterAccessory extends BaseAccessory {
   }
 
   onDevDigitalModelUpdate() {
-    this.services.thermostat?.getCharacteristic(this.Characteristic.TargetTemperature).setProps(this.targetTemperatureProps);
+    this.services.thermostat?.getCharacteristic(this.Characteristic.TargetTemperature).setProps({ ...this.targetTemperatureProps });
   }
 
   private get onOffStatus() {
-    const onOffStatus: boolean = JSON.parse(this.devDigitalModelPropertiesMap.onOffStatus.value);
+    const onOffStatus = safeJsonParse<boolean>(this.devDigitalModelPropertiesMap.onOffStatus?.value ?? 'false');
     return onOffStatus;
   }
 
   private get targetTemperature() {
-    return this.devDigitalModelPropertiesMap.targetTemp.value;
-  }
-
-  private set targetTemperature(value: string) {
-    this.devDigitalModelPropertiesMap.targetTemp.value = value;
+    return this.devDigitalModelPropertiesMap.targetTemp?.value;
   }
 
   private get targetTemperatureProps() {
-    const { dataStep } = this.devDigitalModelPropertiesMap.targetTemp.valueRange;
+    const { dataStep } = this.devDigitalModelPropertiesMap.targetTemp?.valueRange ?? {};
+    if (!dataStep) {
+      return undefined
+    }
     const minValue = Number(dataStep.minValue);
     const maxValue = Number(dataStep.maxValue);
     const minStep = Number(dataStep.step);
@@ -84,11 +84,10 @@ export class HotWaterAccessory extends BaseAccessory {
   }
 
   async setTargetTemperature(value: CharacteristicValue) {
-    const { minValue, maxValue } = this.targetTemperatureProps;
+    const { minValue, maxValue } = this.targetTemperatureProps || { minValue: 0, maxValue: 100 };
     const targetTemp = Math.min(Math.max(value as number, minValue), maxValue).toString();
     try {
       await this.sendCommands({ targetTemp });
-      this.targetTemperature = targetTemp;
-    } catch (error) {}
+    } catch (error) { }
   }
 }
