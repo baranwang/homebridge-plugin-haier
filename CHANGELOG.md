@@ -1,5 +1,11 @@
 # homebridge-plugin-haier
 
+## 2.1.1
+
+### Patch Changes
+
+- a640033: 优化配件的属性获取和状态管理逻辑
+
 ## 2.1.0
 
 ### Minor Changes
