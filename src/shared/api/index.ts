@@ -1,15 +1,14 @@
+import type { AxiosInstance } from 'axios';
 import axios from 'axios';
+import type { Logger } from 'homebridge';
 import { randomUUID } from 'node:crypto';
+import EventEmitter from 'node:events';
 import fs from 'node:fs';
 import path from 'node:path';
 import { URL } from 'node:url';
-import { type MessageEvent, WebSocket } from 'ws';
-
-import { HttpError, getSn, inspectToString, safeJsonParse, sha256 } from '../utils';
-
-import type { AxiosInstance } from 'axios';
-import type { API, Logger } from 'homebridge';
 import { gunzipSync } from 'node:zlib';
+import { type MessageEvent, WebSocket } from 'ws';
+import { HttpError, getSn, inspectToString, safeJsonParse, sha256 } from '../utils';
 import type {
   DevDigitalModel,
   GetFamilyDevicesResponse,
@@ -17,7 +16,6 @@ import type {
   HaierResponse,
   TokenInfo,
 } from './types';
-import EventEmitter from 'node:events';
 
 export * from './types';
 
@@ -46,7 +44,7 @@ export class HaierApi extends EventEmitter<HaierApiEvents> {
 
   constructor(
     private readonly config: HaierApiConfig,
-    private readonly api?: API,
+    private readonly storagePath?: string,
     private readonly log?: Logger,
   ) {
     super();
@@ -65,22 +63,22 @@ export class HaierApi extends EventEmitter<HaierApiEvents> {
     this.setupWebSocketListeners(ws);
   }
 
-  private get storagePath(): string {
-    const storagePath = path.resolve(this.api?.user.storagePath?.() ?? path.dirname(__dirname), '.hb-haier');
-    if (!fs.existsSync(storagePath)) {
-      fs.mkdirSync(storagePath, { recursive: true });
+  private get apiStoragePath(): string {
+    const apiStoragePath = path.resolve(this.storagePath || path.dirname(__dirname), '.hb-haier');
+    if (!fs.existsSync(apiStoragePath)) {
+      fs.mkdirSync(apiStoragePath, { recursive: true });
     }
-    return storagePath;
+    return apiStoragePath;
   }
 
   private get tokenPath(): string {
-    const tokenDir = path.resolve(this.storagePath, 'token');
+    const tokenDir = path.resolve(this.apiStoragePath, 'token');
     if (!fs.existsSync(tokenDir)) fs.mkdirSync(tokenDir, { recursive: true });
     return path.resolve(tokenDir, `${this.config.username}.json`);
   }
 
   private get clientId(): string {
-    const cacheClientIdPath = path.resolve(this.storagePath, 'client-id');
+    const cacheClientIdPath = path.resolve(this.apiStoragePath, 'client-id');
     if (fs.existsSync(cacheClientIdPath)) return fs.readFileSync(cacheClientIdPath, 'utf-8');
 
     const clientId = randomUUID();

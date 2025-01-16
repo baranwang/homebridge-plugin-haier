@@ -17,7 +17,7 @@ class UiServer extends HomebridgePluginUiServer {
   }
 
   async getFamilyList(payload: HaierApiConfig) {
-    this.haierApi = new HaierApi(payload);
+    this.haierApi = new HaierApi(payload, this.homebridgeStoragePath);
     try {
       const familyList = this.haierApi.getFamilyList();
       return familyList;

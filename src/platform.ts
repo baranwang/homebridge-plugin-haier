@@ -24,7 +24,7 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
     this.log.debug('平台初始化完成', this.config.name);
 
     this.api.on('didFinishLaunching', async () => {
-      this.haierApi = new HaierApi(config as unknown as HaierApiConfig, api, log);
+      this.haierApi = new HaierApi(config as unknown as HaierApiConfig, api.user.storagePath(), log);
       await this.haierApi.contactWss();
       this.discoverDevices();
       this.discoveryInterval = setInterval(() => this.discoverDevices(), 10 * 60 * 1000);
