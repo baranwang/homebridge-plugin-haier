@@ -36,11 +36,25 @@ interface HaierApiEvents {
   devDigitalModelUpdate: [deviceId: string, devDigitalModel: DevDigitalModel];
 }
 
+interface WsMessage {
+  topic: string;
+  content: Record<string, unknown>;
+}
+
+interface WebSocketState {
+  isConnecting: boolean;
+  heartbeatInterval?: NodeJS.Timeout;
+}
+
 export class HaierApi extends EventEmitter<HaierApiEvents> {
   private axios!: AxiosInstance;
   private tokenInfo?: TokenInfo;
 
   private digitalModelCache = new Map<string, DevDigitalModel>();
+
+  private wsState: WebSocketState = {
+    isConnecting: false,
+  };
 
   constructor(
     private readonly config: HaierApiConfig,
@@ -220,11 +234,18 @@ export class HaierApi extends EventEmitter<HaierApiEvents> {
         this.setDevDigitalModel(deviceId, digitalModel);
       }
     });
-    this.sendWssMessage('BatchCmdReq', {
-      sn,
-      trace: getSn(),
-      data,
-    });
+    if (this.ws.readyState === WebSocket.OPEN) {
+      this.sendWssMessage('BatchCmdReq', {
+        sn,
+        trace: getSn(),
+        data,
+      });
+    } else {
+      this.axios.post(`https://uws.haier.net/stdudse/v1/sendbatchCmd/${deviceId}`, {
+        sn,
+        cmdMsgList: data,
+      });
+    }
   }
 
   async contactWss() {
@@ -232,10 +253,25 @@ export class HaierApi extends EventEmitter<HaierApiEvents> {
     if (!url) {
       return;
     }
-    if (this.ws) {
-      this.ws.close();
-    }
+
+    this.cleanupWebSocket();
     this.ws = new WebSocket(url);
+
+    return new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('WebSocket 连接超时'));
+      }, 10000);
+
+      this.ws.once('open', () => {
+        clearTimeout(timeout);
+        resolve();
+      });
+
+      this.ws.once('error', (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
+    });
   }
 
   private async getWssUrl() {
@@ -272,14 +308,26 @@ export class HaierApi extends EventEmitter<HaierApiEvents> {
   }
 
   private startHeartbeat() {
-    setInterval(() => {
-      this.sendWssMessage('HeartBeat', { sn: getSn(), duration: 0 });
+    if (this.wsState.heartbeatInterval) {
+      clearInterval(this.wsState.heartbeatInterval);
+    }
+    this.wsState.heartbeatInterval = setInterval(() => {
+      try {
+        this.sendWssMessage('HeartBeat', { sn: getSn(), duration: 0 });
+      } catch (error) {
+        this.logger.error('心跳消息发送失败:', error);
+        this.reconnectWebSocket();
+      }
     }, 60 * 1000);
   }
 
   private handleWsMessage(event: MessageEvent) {
-    const resp = safeJsonParse<{ topic: string; content: Record<string, unknown> }>(event.data.toString());
-    this.logger.debug('⬇️', inspectToString(resp?.topic));
+    const resp = safeJsonParse<WsMessage>(event.data.toString());
+    if (!resp) {
+      this.logger.debug('WebSocket message:', event.data.toString());
+      return;
+    }
+    this.logger.debug('⬇️', `[${resp.topic}]`);
 
     switch (resp?.topic) {
       case 'HeartBeatAck':
@@ -313,7 +361,11 @@ export class HaierApi extends EventEmitter<HaierApiEvents> {
   }
 
   sendWssMessage(topic: string, content: Record<string, unknown>) {
-    this.logger.debug('⬆️', '[topic]', topic, '[content]', inspectToString(content));
+    if (this.ws.readyState !== WebSocket.OPEN) {
+      this.logger.warn('WebSocket is not open');
+      return;
+    }
+    this.logger.debug('⬆️', `[${topic}]`, inspectToString(content));
     this.ws.send(
       JSON.stringify({
         agClientId: this.clientId,
@@ -333,20 +385,27 @@ export class HaierApi extends EventEmitter<HaierApiEvents> {
   }
 
   private async reconnectWebSocket() {
-    // Add a delay before reconnecting to avoid rapid retries in case of persistent failure
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    if (this.wsState.isConnecting) {
+      return;
+    }
 
-    this.logger.info('Reconnecting WebSocket...');
+    this.wsState.isConnecting = true;
+
     try {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      this.logger.info('正在重新连接 WebSocket...');
+
       await this.contactWss();
+
       if (this.subscribedDevices.length > 0) {
-        this.logger.info('Re-subscribing to devices:', this.subscribedDevices);
+        this.logger.info('重新订阅设备:', this.subscribedDevices);
         this.subscribeDevices(this.subscribedDevices);
       }
     } catch (error) {
-      this.logger.error('Failed to reconnect WebSocket:', error);
-      // Retry if reconnection fails
+      this.logger.error('WebSocket 重连失败:', error);
       this.reconnectWebSocket();
+    } finally {
+      this.wsState.isConnecting = false;
     }
   }
 
@@ -375,6 +434,20 @@ export class HaierApi extends EventEmitter<HaierApiEvents> {
     } catch (error) {
       this.logger.error('获取 Token 失败', error);
       return '';
+    }
+  }
+
+  private cleanupWebSocket() {
+    if (this.wsState.heartbeatInterval) {
+      clearInterval(this.wsState.heartbeatInterval);
+    }
+
+    if (this._ws) {
+      try {
+        this._ws.close();
+      } catch (error) {
+        this.logger.error('WebSocket 关闭失败:', error);
+      }
     }
   }
 }
