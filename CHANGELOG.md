@@ -1,5 +1,11 @@
 # homebridge-plugin-haier
 
+## 2.3.0
+
+### Minor Changes
+
+- cbe7953: 迁移 API 逻辑到 haier-iot 并更新相关依赖
+
 ## 2.2.0
 
 ### Minor Changes
