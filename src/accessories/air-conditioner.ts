@@ -112,13 +112,13 @@ export class AirConditionerAccessory extends BaseAccessory {
   private get targetTemperatureProps():
     | Pick<CharacteristicProps, 'minValue' | 'maxValue' | 'minStep' | 'validValueRanges'>
     | undefined {
-    const { dataStep } = this.devDigitalModelPropertiesMap.targetTemp?.valueRange ?? {};
-    if (!dataStep) {
+    const valueRange = this.devDigitalModelPropertiesMap.targetTemp?.valueRange;
+    if (!valueRange || valueRange.type !== 'STEP') {
       return undefined;
     }
-    const minValue = Number.parseFloat(dataStep.minValue);
-    const maxValue = Number.parseFloat(dataStep.maxValue);
-    const minStep = Number.parseFloat(dataStep.step);
+    const minValue = Number.parseFloat(valueRange.dataStep.minValue);
+    const maxValue = Number.parseFloat(valueRange.dataStep.maxValue);
+    const minStep = Number.parseFloat(valueRange.dataStep.step);
     return {
       minValue,
       maxValue,

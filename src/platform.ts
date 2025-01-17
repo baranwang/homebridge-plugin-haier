@@ -1,8 +1,7 @@
-import { getSn, HaierApi, inspectToString } from '@shared';
-import type { DeviceInfo, HaierApiConfig } from '@shared';
-import { PLATFORM_NAME, PLUGIN_NAME } from '@shared';
+import { PLATFORM_NAME, PLUGIN_NAME, generateCacheDir } from '@shared';
+import { type DeviceInfo, HaierIoT } from 'haier-iot';
 import type { API, Characteristic, DynamicPlatformPlugin, Logger, PlatformConfig, Service } from 'homebridge';
-import { AirConditionerAccessory, HotWaterAccessory, FridgeAccessory } from './accessories';
+import { AirConditionerAccessory, FridgeAccessory, HotWaterAccessory } from './accessories';
 import type { HaierPlatformAccessory, HaierPlatformAccessoryContext } from './types';
 
 export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
@@ -12,7 +11,7 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
 
   public readonly accessories: HaierPlatformAccessory[] = [];
 
-  public haierApi!: HaierApi;
+  public haierIoT!: HaierIoT;
 
   private discoveryInterval?: NodeJS.Timeout;
 
@@ -24,8 +23,13 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
     this.log.debug('平台初始化完成', this.config.name);
 
     this.api.on('didFinishLaunching', async () => {
-      this.haierApi = new HaierApi(config as unknown as HaierApiConfig, api, log);
-      await this.haierApi.contactWss();
+      this.haierIoT = new HaierIoT({
+        username: this.config.username,
+        password: this.config.password,
+        storageDir: generateCacheDir(this.api.user.storagePath()),
+        logger: log,
+      });
+      await this.haierIoT.connect();
       this.discoverDevices();
       this.discoveryInterval = setInterval(() => this.discoverDevices(), 10 * 60 * 1000);
     });
@@ -47,7 +51,7 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
       return;
     }
 
-    this.haierApi.getDevicesByFamilyId(familyId).then(async (devices) => {
+    this.haierIoT.getDevicesByFamilyId(familyId).then(async (devices) => {
       const resp = await Promise.allSettled(
         devices
           .filter((device) => !disabledDevices.includes(device.baseInfo.deviceId))
@@ -58,7 +62,7 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
         .map((item) => item.value)
         .filter((item) => typeof item === 'string');
       if (deviceIds.length) {
-        this.haierApi.subscribeDevices(deviceIds);
+        this.haierIoT.subscribeDevices(deviceIds);
       }
     });
   }
@@ -103,7 +107,7 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
 
   private isDeviceIneligible(device: DeviceInfo): boolean {
     const displayName = this.getDeviceName(device);
-    if (!device.baseInfo.permission.auth.control) {
+    if (!device.baseInfo.permission?.auth?.control) {
       this.log.warn('设备', displayName, '没有控制权限');
       return true;
     }

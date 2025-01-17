@@ -10,29 +10,34 @@
         "title": "Name",
         "type": "string",
         "required": true,
-        "default": "HaierHomebridgePlugin"
+        "default": "HaierHomebridgePlugin",
+        "description": "The name of the plugin instance."
       },
       "username": {
         "title": "Username",
         "type": "string",
-        "required": true
+        "required": true,
+        "description": "Your Haier account username."
       },
       "password": {
         "title": "Password",
         "type": "string",
-        "required": true
+        "required": true,
+        "description": "Your Haier account password."
       },
       "familyId": {
         "title": "Family ID",
         "type": "string",
-        "required": true
+        "required": true,
+        "description": "The ID of the family to control."
       },
       "disabledDevices": {
         "title": "Disabled Devices",
         "type": "array",
         "items": {
           "type": "string"
-        }
+        },
+        "description": "List of device IDs to be disabled."
       }
     }
   }
