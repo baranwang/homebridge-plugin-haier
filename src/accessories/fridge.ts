@@ -1,6 +1,5 @@
-import type { DevDigitalModelProperty } from '@shared';
-import { BiMap, inspectToString } from '@shared';
-import type { CharacteristicValue } from 'homebridge';
+import { BiMap } from '@shared';
+import type { DevDigitalModelProperty } from 'haier-iot';
 import { BaseAccessory } from './base';
 
 const serviceConfig = {
@@ -52,14 +51,14 @@ export class FridgeAccessory extends BaseAccessory {
       const currentTempProperty = this.devDigitalModelPropertiesMap[currentTempKey];
       const targetTempProperty = this.devDigitalModelPropertiesMap[targetTempKey];
       if (!currentTempProperty || !targetTempProperty) return;
-      const temperatureMap = this.extractCelsiusDataMapping(targetTempProperty.valueRange.dataList);
+      const temperatureMap = this.extractCelsiusDataMapping(targetTempProperty.valueRange);
 
       service
         .getCharacteristic(this.Characteristic.CurrentTemperature)
-        .updateValue(this.parseTemperature(currentTempProperty.value));
+        .updateValue(this.parseTemperature(currentTempProperty.value ?? undefined));
       service
         .getCharacteristic(this.Characteristic.CoolingThresholdTemperature)
-        .updateValue(temperatureMap.get(targetTempProperty.value) ?? 0);
+        .updateValue(temperatureMap.get(targetTempProperty.value ?? '') ?? 0);
     });
   }
 
@@ -70,7 +69,7 @@ export class FridgeAccessory extends BaseAccessory {
     if (!currentTempProperty || !targetTempProperty) return;
     this.setServices(serviceName, this.platform.Service.HeaterCooler, displayName);
 
-    const temperatureMap = this.extractCelsiusDataMapping(targetTempProperty.valueRange.dataList);
+    const temperatureMap = this.extractCelsiusDataMapping(targetTempProperty.valueRange);
     const targetTempValues = Array.from(temperatureMap.values());
     const minValue = Math.min(...targetTempValues);
     const maxValue = Math.max(...targetTempValues);
@@ -106,18 +105,18 @@ export class FridgeAccessory extends BaseAccessory {
 
     service
       .getCharacteristic(this.Characteristic.CurrentTemperature)
-      .onGet(() => this.parseTemperature(currentTempProperty.value));
+      .onGet(() => this.parseTemperature(currentTempProperty.value ?? undefined));
 
     service
       .getCharacteristic(this.Characteristic.CoolingThresholdTemperature)
-      .setValue(temperatureMap.get(targetTempProperty.value) ?? 0)
+      .setValue(temperatureMap.get(targetTempProperty.value ?? '') ?? 0)
       .setProps({
         minValue,
         maxValue,
         minStep,
         validValues: targetTempValues,
       })
-      .onGet(() => temperatureMap.get(targetTempProperty.value) ?? 0)
+      .onGet(() => temperatureMap.get(targetTempProperty.value ?? '') ?? 0)
       .onSet((value) => {
         const targetLevel = temperatureMap.getKey(Number.parseInt(value.toString()));
         if (targetLevel) {
@@ -126,11 +125,14 @@ export class FridgeAccessory extends BaseAccessory {
       });
   }
 
-  private extractCelsiusDataMapping(dataList: DevDigitalModelProperty['valueRange']['dataList']) {
-    const celsiusRegex = /(-?\d+)℃/;
+  private extractCelsiusDataMapping(valueRange: DevDigitalModelProperty['valueRange']) {
     const mapping = new BiMap<string, number>();
-    dataList.forEach((item) => {
-      const match = item.desc.match(celsiusRegex); // 匹配摄氏度
+    if (!valueRange || valueRange.type !== 'LIST') {
+      return mapping;
+    }
+    const celsiusRegex = /(-?\d+)℃/;
+    valueRange.dataList.forEach((item) => {
+      const match = item.desc?.match(celsiusRegex); // 匹配摄氏度
       if (match) {
         const celsius = match[1]; // 获取摄氏度的值
         mapping.set(item.data, Number.parseInt(celsius, 10));

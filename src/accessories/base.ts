@@ -1,12 +1,13 @@
+import type { CommandParams, DevDigitalModel, DevDigitalModelProperty } from 'haier-iot';
 import type { HaierHomebridgePlatform } from '../platform';
 import type { HaierPlatformAccessory } from '../types';
-import { safeJsonParse, type DevDigitalModel, type DevDigitalModelProperty } from '@shared';
+import { safeJsonParse } from '@shared';
 import type { Service } from 'homebridge';
 
 export abstract class BaseAccessory {
   public services: Record<string, Service> = {};
 
-  private devDigitalModelPromise?: Promise<DevDigitalModel | null>;
+  private devDigitalModelPromise?: Promise<DevDigitalModel | undefined>;
 
   private isFetchingDevDigitalModel = false;
 
@@ -16,7 +17,7 @@ export abstract class BaseAccessory {
   ) {
     const { deviceInfo } = this.accessory.context;
 
-    this.platform.haierApi.addListener('devDigitalModelUpdate', (deviceId, devDigitalModel) => {
+    this.platform.haierIoT.addListener('devDigitalModelUpdate', (deviceId, devDigitalModel) => {
       if (deviceInfo.baseInfo.deviceId !== deviceId) {
         return;
       }
@@ -64,7 +65,7 @@ export abstract class BaseAccessory {
   }
 
   protected getPropertyValue<T>(property: string, defaultValue?: T): T | null {
-    return safeJsonParse<T>(this.devDigitalModelPropertiesMap[property]?.value, defaultValue);
+    return safeJsonParse<T>(this.devDigitalModelPropertiesMap?.[property]?.value ?? undefined, defaultValue);
   }
 
   protected async getDevDigitalModel() {
@@ -81,7 +82,7 @@ export abstract class BaseAccessory {
 
     try {
       if (!this.devDigitalModelPromise) {
-        this.devDigitalModelPromise = this.platform.haierApi.getDevDigitalModel(deviceId);
+        this.devDigitalModelPromise = this.platform.haierIoT.getDevDigitalModel(deviceId);
       }
       const devDigitalModel = await this.devDigitalModelPromise;
       if (!devDigitalModel) {
@@ -100,7 +101,7 @@ export abstract class BaseAccessory {
     }
   }
 
-  protected sendCommands(...commands: Record<string, string>[]) {
+  protected sendCommands(...commands: CommandParams[]) {
     commands.forEach((cmd) => {
       Object.entries(cmd).forEach(([key, value]) => {
         const { valueRange, desc: commandDescription } = this.devDigitalModelPropertiesMap[key] ?? {};
@@ -109,13 +110,13 @@ export abstract class BaseAccessory {
           return;
         }
         if (valueRange.type === 'LIST') {
-          const valueItem = valueRange.dataList.find((item) => item.data === value);
+          const valueItem = valueRange.dataList?.find((item) => item.data === value);
           valueDescription = valueItem?.desc ?? value;
         }
         this.platform.log.info('设置', this.accessory.displayName, commandDescription, '为', valueDescription);
       });
     });
 
-    this.platform.haierApi.sendCommands(this.deviceInfo.baseInfo.deviceId, ...commands);
+    this.platform.haierIoT.sendCommands(this.deviceInfo.baseInfo.deviceId, commands);
   }
 }

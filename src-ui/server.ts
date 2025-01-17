@@ -1,10 +1,9 @@
-import { HaierApi, HttpError } from '@shared';
+import {  generateCacheDir, HttpError } from '@shared';
 import { HomebridgePluginUiServer } from '@homebridge/plugin-ui-utils';
-
-import type { HaierApiConfig } from '@shared';
+import { HaierIoT } from 'haier-iot';
 
 class UiServer extends HomebridgePluginUiServer {
-  haierApi!: HaierApi;
+  private haierIoT!: HaierIoT;
 
   constructor() {
     super();
@@ -16,10 +15,14 @@ class UiServer extends HomebridgePluginUiServer {
     this.ready();
   }
 
-  async getFamilyList(payload: HaierApiConfig) {
-    this.haierApi = new HaierApi(payload, this.homebridgeStoragePath);
+  async getFamilyList(payload: { username: string; password: string }) {
+    this.haierIoT = new HaierIoT({
+      username: payload.username,
+      password: payload.password,
+      storageDir: generateCacheDir(this.homebridgeStoragePath ?? ''),
+    });
     try {
-      const familyList = this.haierApi.getFamilyList();
+      const familyList = this.haierIoT.getFamilyList();
       return familyList;
     } catch (error) {
       if (error instanceof HttpError) {
@@ -30,11 +33,11 @@ class UiServer extends HomebridgePluginUiServer {
   }
 
   async getDevices(payload: { familyId: string }) {
-    if (!this.haierApi) {
+    if (!this.haierIoT) {
       return Promise.resolve([]);
     }
     try {
-      const devices = this.haierApi.getDevicesByFamilyId(payload.familyId);
+      const devices = this.haierIoT.getDevicesByFamilyId(payload.familyId);
       return devices;
     } catch (error) {
       if (error instanceof HttpError) {

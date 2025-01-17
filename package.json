@@ -55,8 +55,7 @@
   ],
   "dependencies": {
     "@homebridge/plugin-ui-utils": "^2.0.0",
-    "axios": "^1.7.9",
-    "ws": "^8.18.0"
+    "haier-iot": "1.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.2",
@@ -67,11 +66,9 @@
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
-    "@types/ws": "^8.5.13",
     "ahooks": "^3.8.4",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
-    "date-fns": "^4.1.0",
     "homebridge": "^1.8.5",
     "homebridge-config-ui-x": "^4.67.0",
     "nodemon": "^3.1.9",
