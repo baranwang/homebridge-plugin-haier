@@ -1,5 +1,15 @@
 # homebridge-plugin-haier
 
+## 2.5.0
+
+### Minor Changes
+
+- 156309a: 更新 haier-iot 版本至 1.2.0，调整相关类型和配置
+
+### Patch Changes
+
+- 1fe73ab: bump version
+
 ## 2.4.0
 
 ### Minor Changes
