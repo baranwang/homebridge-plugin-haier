@@ -2,7 +2,7 @@ import { PLATFORM_NAME, PLUGIN_NAME, generateCacheDir } from '@shared';
 import { type DeviceInfo, HaierIoT } from 'haier-iot';
 import type { API, Characteristic, DynamicPlatformPlugin, Logger, PlatformConfig, Service } from 'homebridge';
 import { AirConditionerAccessory, FridgeAccessory, HotWaterAccessory } from './accessories';
-import type { HaierPlatformAccessory, HaierPlatformAccessoryContext } from './types';
+import type { HaierPlatformAccessory, HaierPlatformAccessoryContext, HaierPlatformConfig } from './types';
 
 export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
   public readonly Service: typeof Service = this.api.hap.Service;
@@ -17,15 +17,20 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
 
   constructor(
     public readonly log: Logger,
-    public readonly config: PlatformConfig,
+    public readonly config: HaierPlatformConfig,
     public readonly api: API,
   ) {
     this.log.debug('平台初始化完成', this.config.name);
 
     this.api.on('didFinishLaunching', async () => {
+      const { username, password } = this.config;
+      if (!username || !password) {
+        this.log.error('请在 config.json 中配置 username 和 password');
+        return;
+      }
       this.haierIoT = new HaierIoT({
-        username: this.config.username,
-        password: this.config.password,
+        username,
+        password,
         storageDir: generateCacheDir(this.api.user.storagePath()),
         logger: log,
       });

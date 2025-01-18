@@ -1,11 +1,11 @@
-import type { HaierApi } from '@shared';
 import { useRequest } from 'ahooks';
+import type HaierIoT from 'haier-iot';
 import { useEffect } from 'react';
 
 export function useFamilyList({ username, password }: { username?: string; password?: string }) {
   const { data: familyList, loading } = useRequest(
     () => {
-      return window.homebridge.request('/family', { username, password }) as ReturnType<HaierApi['getFamilyList']>;
+      return window.homebridge.request('/family', { username, password }) as ReturnType<HaierIoT['getFamilyList']>;
     },
     {
       ready: !!username && !!password,

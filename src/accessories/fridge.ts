@@ -1,5 +1,6 @@
 import { BiMap } from '@shared';
 import type { DevDigitalModelProperty } from 'haier-iot';
+import { Perms } from 'homebridge';
 import { BaseAccessory } from './base';
 
 const serviceConfig = {
@@ -76,12 +77,15 @@ export class FridgeAccessory extends BaseAccessory {
     const minStep = this.calculateStep(targetTempValues);
     const service = this.services[serviceName];
 
-    service.getCharacteristic(this.Characteristic.Active).onGet(this.getActive.bind(this));
+    service
+      .getCharacteristic(this.Characteristic.Active)
+      .setProps({ perms: [Perms.PAIRED_READ] })
+      .onGet(this.getActive.bind(this));
 
     service
       .getCharacteristic(this.Characteristic.CurrentHeaterCoolerState)
       .onGet(this.getCurrentHeaterCoolerState.bind(this))
-      .setValue(this.Characteristic.CurrentHeaterCoolerState.COOLING);
+      .setProps({ perms: [Perms.PAIRED_READ] });
 
     service
       .getCharacteristic(this.Characteristic.TargetHeaterCoolerState)
@@ -90,18 +94,9 @@ export class FridgeAccessory extends BaseAccessory {
         minValue: this.Characteristic.TargetHeaterCoolerState.COOL,
         maxValue: this.Characteristic.TargetHeaterCoolerState.COOL,
         validValues: [this.Characteristic.TargetHeaterCoolerState.COOL],
+        perms: [Perms.PAIRED_READ],
       })
-      .onGet(() => this.Characteristic.TargetHeaterCoolerState.COOL)
-      .onSet(() => {
-        // 冰箱没有开关机的功能，只有制冷
-        service
-          .getCharacteristic(this.Characteristic.TargetHeaterCoolerState)
-          .updateValue(this.Characteristic.TargetHeaterCoolerState.COOL);
-        service
-          .getCharacteristic(this.Characteristic.CurrentHeaterCoolerState)
-          .updateValue(this.Characteristic.CurrentHeaterCoolerState.COOLING);
-      })
-      .setValue(this.Characteristic.TargetHeaterCoolerState.COOL);
+      .onGet(() => this.Characteristic.TargetHeaterCoolerState.COOL);
 
     service
       .getCharacteristic(this.Characteristic.CurrentTemperature)

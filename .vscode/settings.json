@@ -1,8 +1,6 @@
 {
-    "cSpell.words": [
-        "haier"
-    ],
-    "[typescript]": {
-        "editor.defaultFormatter": "biomejs.biome"
-    },
+  "cSpell.words": ["haier"],
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  }
 }

@@ -1,6 +1,6 @@
+import { isNumber } from '@shared';
 import type { CharacteristicProps, CharacteristicValue } from 'homebridge';
 import { BaseAccessory } from './base';
-import { isNumber } from '@shared';
 
 export class AirConditionerAccessory extends BaseAccessory {
   async init() {
@@ -113,7 +113,7 @@ export class AirConditionerAccessory extends BaseAccessory {
     | Pick<CharacteristicProps, 'minValue' | 'maxValue' | 'minStep' | 'validValueRanges'>
     | undefined {
     const valueRange = this.devDigitalModelPropertiesMap.targetTemp?.valueRange;
-    if (!valueRange || valueRange.type !== 'STEP') {
+    if (!valueRange || valueRange.type !== 'STEP' || !valueRange.dataStep) {
       return undefined;
     }
     const minValue = Number.parseFloat(valueRange.dataStep.minValue);
@@ -164,8 +164,7 @@ export class AirConditionerAccessory extends BaseAccessory {
   setTargetHeatingCoolingState(value: CharacteristicValue) {
     const { TargetHeatingCoolingState } = this.Characteristic;
     if (value === TargetHeatingCoolingState.OFF) {
-      this.sendCommands({ onOffStatus: 'false' });
-      return;
+      return this.sendCommands({ onOffStatus: 'false' });
     }
     const modeMap = {
       [TargetHeatingCoolingState.AUTO]: '0',
@@ -174,8 +173,7 @@ export class AirConditionerAccessory extends BaseAccessory {
     };
     const operationMode = modeMap[value as keyof typeof modeMap];
     if (operationMode) {
-      this.sendCommands({ onOffStatus: 'true' }, { operationMode });
-      return;
+      return this.sendCommands({ onOffStatus: 'true' }, { operationMode });
     }
     this.platform.log.warn('Unsupported TargetHeatingCoolingState:', value);
   }
@@ -195,7 +193,7 @@ export class AirConditionerAccessory extends BaseAccessory {
     if (!this.onOffStatus) {
       args.unshift({ onOffStatus: 'true' });
     }
-    this.sendCommands(...args);
+    return this.sendCommands(...args);
   }
 
   getTemperatureDisplayUnits() {

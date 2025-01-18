@@ -1,8 +1,8 @@
+import { safeJsonParse } from '@shared';
 import type { CommandParams, DevDigitalModel, DevDigitalModelProperty } from 'haier-iot';
+import type { Service } from 'homebridge';
 import type { HaierHomebridgePlatform } from '../platform';
 import type { HaierPlatformAccessory } from '../types';
-import { safeJsonParse } from '@shared';
-import type { Service } from 'homebridge';
 
 export abstract class BaseAccessory {
   public services: Record<string, Service> = {};
@@ -21,7 +21,8 @@ export abstract class BaseAccessory {
       if (deviceInfo.baseInfo.deviceId !== deviceId) {
         return;
       }
-      this.onDevDigitalModelUpdate(devDigitalModel);
+      this.accessory.context.devDigitalModel = devDigitalModel;
+      this.onDevDigitalModelUpdate();
     });
 
     const { Characteristic, Service } = this.platform;
@@ -35,7 +36,7 @@ export abstract class BaseAccessory {
 
   abstract init(): void;
 
-  abstract onDevDigitalModelUpdate(devDigitalModel: DevDigitalModel): void;
+  abstract onDevDigitalModelUpdate(): void;
 
   protected setServices(key: string, service: typeof Service, name?: string) {
     const existingService = this.accessory.getService(key);
@@ -79,7 +80,6 @@ export abstract class BaseAccessory {
     }
 
     this.isFetchingDevDigitalModel = true;
-
     try {
       if (!this.devDigitalModelPromise) {
         this.devDigitalModelPromise = this.platform.haierIoT.getDevDigitalModel(deviceId);
@@ -89,7 +89,7 @@ export abstract class BaseAccessory {
         this.platform.log.error('设备数据为空', this.accessory.displayName);
         return null;
       }
-      this.accessory.context.devDigitalModel = devDigitalModel;
+      this.accessory.context.devDigitalModel = { ...devDigitalModel };
 
       return devDigitalModel;
     } catch (error) {
@@ -101,7 +101,7 @@ export abstract class BaseAccessory {
     }
   }
 
-  protected sendCommands(...commands: CommandParams[]) {
+  protected async sendCommands(...commands: CommandParams[]) {
     commands.forEach((cmd) => {
       Object.entries(cmd).forEach(([key, value]) => {
         const { valueRange, desc: commandDescription } = this.devDigitalModelPropertiesMap[key] ?? {};
@@ -117,6 +117,7 @@ export abstract class BaseAccessory {
       });
     });
 
-    this.platform.haierIoT.sendCommands(this.deviceInfo.baseInfo.deviceId, commands);
+    await this.platform.haierIoT.sendCommands(this.deviceInfo.baseInfo.deviceId, commands);
+    this.onDevDigitalModelUpdate();
   }
 }

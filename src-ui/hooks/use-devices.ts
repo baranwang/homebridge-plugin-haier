@@ -1,11 +1,11 @@
-import type { HaierApi } from '@shared';
 import { useRequest } from 'ahooks';
+import type HaierIoT from 'haier-iot';
 import { useEffect } from 'react';
 
 export function useDevices(familyId?: string) {
   const { data: devices, loading } = useRequest(
     () => {
-      return window.homebridge.request('/device') as ReturnType<HaierApi['getDevicesByFamilyId']>;
+      return window.homebridge.request('/device') as ReturnType<HaierIoT['getDevicesByFamilyId']>;
     },
     {
       ready: !!familyId,

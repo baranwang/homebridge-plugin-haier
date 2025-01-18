@@ -1,7 +1,7 @@
 import { pluginReact } from '@rsbuild/plugin-react';
-import { defineConfig, type LibConfig } from '@rslib/core';
-import pkg from './package.json';
 import { RsdoctorRspackPlugin } from '@rsdoctor/rspack-plugin';
+import { type LibConfig, defineConfig } from '@rslib/core';
+import pkg from './package.json';
 
 const NODE_ENV = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -90,6 +90,7 @@ export default defineConfig({
     minify: NODE_ENV === 'production',
     externals: {
       '@shared': `${pkg.name}/shared`,
+      homebridge: 'homebridge',
     },
   },
   source: {

@@ -1,6 +1,6 @@
-import type { CharacteristicProps, CharacteristicValue } from 'homebridge';
+import { isNumber } from '@shared';
+import { type CharacteristicProps, type CharacteristicValue, Perms } from 'homebridge';
 import { BaseAccessory } from './base';
-import { isNumber, safeJsonParse } from '@shared';
 
 export class HotWaterAccessory extends BaseAccessory {
   async init() {
@@ -38,6 +38,35 @@ export class HotWaterAccessory extends BaseAccessory {
       .getCharacteristic(this.Characteristic.TemperatureDisplayUnits)
       .onGet(() => this.Characteristic.TemperatureDisplayUnits.CELSIUS);
     //#endregion
+
+    if (this.getPropertyValue<number>('zeroColdWaterFuncExist')) {
+      this.setServices('switch', this.platform.Service.Switch, '零冷水');
+
+      this.services.switch
+        .getCharacteristic(this.Characteristic.On)
+        .onGet(this.getZeroColdWaterStatus.bind(this))
+        .onSet(this.setZeroColdWaterStatus.bind(this));
+    }
+
+    if (this.devDigitalModelPropertiesMap.flowStatus) {
+      this.setServices('flowStatus', this.platform.Service.Valve, '水流状态');
+      this.services.flowStatus
+        .getCharacteristic(this.Characteristic.Active)
+        .setProps({ perms: [Perms.PAIRED_READ] })
+        .onGet(() =>
+          this.getPropertyValue<boolean>('flowStatus')
+            ? this.Characteristic.Active.ACTIVE
+            : this.Characteristic.Active.INACTIVE,
+        );
+
+      this.services.flowStatus
+        .getCharacteristic(this.Characteristic.InUse)
+        .onGet(() =>
+          this.getPropertyValue<boolean>('flowStatus')
+            ? this.Characteristic.InUse.IN_USE
+            : this.Characteristic.InUse.NOT_IN_USE,
+        );
+    }
   }
 
   onDevDigitalModelUpdate() {
@@ -54,11 +83,14 @@ export class HotWaterAccessory extends BaseAccessory {
 
       thermostatService.getCharacteristic(this.Characteristic.CurrentTemperature).updateValue(this.targetTemperature);
     }
+
+    if (this.getPropertyValue<number>('zeroColdWaterFuncExist')) {
+      this.services.switch?.getCharacteristic(this.Characteristic.On).updateValue(this.getZeroColdWaterStatus());
+    }
   }
 
   private get onOffStatus() {
-    const onOffStatus = safeJsonParse<boolean>(this.devDigitalModelPropertiesMap.onOffStatus?.value ?? 'false');
-    return onOffStatus;
+    return this.getPropertyValue<boolean>('onOffStatus');
   }
 
   private get targetTemperature() {
@@ -69,7 +101,7 @@ export class HotWaterAccessory extends BaseAccessory {
     | Pick<CharacteristicProps, 'minValue' | 'maxValue' | 'minStep' | 'validValueRanges'>
     | undefined {
     const valueRange = this.devDigitalModelPropertiesMap.targetTemp?.valueRange;
-    if (!valueRange || valueRange.type !== 'STEP') {
+    if (!valueRange || valueRange.type !== 'STEP' || !valueRange.dataStep) {
       return undefined;
     }
     const minValue = Number.parseFloat(valueRange.dataStep.minValue);
@@ -89,17 +121,26 @@ export class HotWaterAccessory extends BaseAccessory {
       : this.Characteristic.CurrentHeatingCoolingState.OFF;
   }
 
-  async setTargetHeatingCoolingState(value: CharacteristicValue) {
-    this.sendCommands({ onOffStatus: (!!value).toString() });
+  setTargetHeatingCoolingState(value: CharacteristicValue) {
+    return this.sendCommands({ onOffStatus: (!!value).toString() });
   }
 
   getTargetTemperature() {
     return this.targetTemperature;
   }
 
-  async setTargetTemperature(value: CharacteristicValue) {
+  setTargetTemperature(value: CharacteristicValue) {
     const { minValue = 0, maxValue = 100 } = this.targetTemperatureProps ?? {};
     const targetTemp = Math.min(Math.max(Number.parseFloat(value.toString()), minValue), maxValue).toString();
-    this.sendCommands({ targetTemp });
+    return this.sendCommands({ targetTemp });
+  }
+
+  getZeroColdWaterStatus() {
+    return !!this.getPropertyValue<number>('zeroColdWaterStatus');
+  }
+
+  setZeroColdWaterStatus(value: CharacteristicValue) {
+    const enableMode = this.platform.config.customConfig?.hotWater?.zeroColdWaterMode ?? '4';
+    return this.sendCommands({ zeroColdWaterStatus: value ? enableMode : '0' });
   }
 }

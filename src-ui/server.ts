@@ -1,5 +1,5 @@
-import {  generateCacheDir, HttpError } from '@shared';
 import { HomebridgePluginUiServer } from '@homebridge/plugin-ui-utils';
+import { generateCacheDir } from '@shared';
 import { HaierIoT } from 'haier-iot';
 
 class UiServer extends HomebridgePluginUiServer {
@@ -21,30 +21,16 @@ class UiServer extends HomebridgePluginUiServer {
       password: payload.password,
       storageDir: generateCacheDir(this.homebridgeStoragePath ?? ''),
     });
-    try {
-      const familyList = this.haierIoT.getFamilyList();
-      return familyList;
-    } catch (error) {
-      if (error instanceof HttpError) {
-        throw new Error(error.retInfo);
-      }
-      throw error;
-    }
+    const familyList = this.haierIoT.getFamilyList();
+    return familyList;
   }
 
   async getDevices(payload: { familyId: string }) {
     if (!this.haierIoT) {
       return Promise.resolve([]);
     }
-    try {
-      const devices = this.haierIoT.getDevicesByFamilyId(payload.familyId);
-      return devices;
-    } catch (error) {
-      if (error instanceof HttpError) {
-        throw new Error(error.retInfo);
-      }
-      throw error;
-    }
+    const devices = this.haierIoT.getDevicesByFamilyId(payload.familyId);
+    return devices;
   }
 }
 
