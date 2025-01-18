@@ -15,3 +15,21 @@
 计划支持的设备：
 
 - [ ] 更多……
+
+## 自定义配置
+
+```jsonc
+{
+  "name": "homebridge-plugin-haier",
+  "platform": "HaierHomebridgePlugin",
+  "username": "你的海尔账号",
+  "password": "你的海尔密码",
+  "familyId": "你的家庭 ID",
+  "deviceId": "你的设备 ID",
+  "disabledDevices": [], // 禁用的设备 ID
+  "customConfig": {
+    "hotWater": {
+      "zeroColdWaterMode": "4" // 开启零冷水时使用的模式，1: 单次循环, 2: 定时循环, 3: 水动循环, 4: 云智慧循环, 10: 半管循环
+    }
+  }
+}
