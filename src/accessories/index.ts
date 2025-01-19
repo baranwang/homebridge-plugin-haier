@@ -1,3 +1,3 @@
 export * from './air-conditioner';
-export * from './hot-water';
+export * from './water-heater';
 export * from './fridge';

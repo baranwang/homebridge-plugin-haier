@@ -2,11 +2,9 @@ import { isNumber } from '@shared';
 import { type CharacteristicProps, type CharacteristicValue, Perms } from 'homebridge';
 import { BaseAccessory } from './base';
 
-export class HotWaterAccessory extends BaseAccessory {
+export class WaterHeaterAccessory extends BaseAccessory {
   async init() {
     this.setServices('thermostat', this.platform.Service.Thermostat);
-
-    await this.getDevDigitalModel();
 
     //#region Thermostat
     this.services.thermostat
@@ -48,7 +46,7 @@ export class HotWaterAccessory extends BaseAccessory {
         .onSet(this.setZeroColdWaterStatus.bind(this));
     }
 
-    if (this.devDigitalModelPropertiesMap.flowStatus) {
+    if (this.deviceProperties.flowStatus) {
       this.setServices('flowStatus', this.platform.Service.Valve, '水流状态');
       this.services.flowStatus
         .getCharacteristic(this.Characteristic.Active)
@@ -100,7 +98,7 @@ export class HotWaterAccessory extends BaseAccessory {
   private get targetTemperatureProps():
     | Pick<CharacteristicProps, 'minValue' | 'maxValue' | 'minStep' | 'validValueRanges'>
     | undefined {
-    const valueRange = this.devDigitalModelPropertiesMap.targetTemp?.valueRange;
+    const valueRange = this.deviceProperties.targetTemp?.valueRange;
     if (!valueRange || valueRange.type !== 'STEP' || !valueRange.dataStep) {
       return undefined;
     }

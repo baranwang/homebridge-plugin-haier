@@ -2,11 +2,17 @@ import { isNumber } from '@shared';
 import type { CharacteristicProps, CharacteristicValue } from 'homebridge';
 import { BaseAccessory } from './base';
 
-export class AirConditionerAccessory extends BaseAccessory {
-  async init() {
-    this.setServices('thermostat', this.platform.Service.Thermostat);
+enum HaierAcOperationMode {
+  AUTO = '0',
+  COOL = '1',
+  DEHUMIDIFY = '2',
+  HEAT = '4',
+  FAN = '6',
+}
 
-    await this.getDevDigitalModel();
+export class AirConditionerAccessory extends BaseAccessory {
+  init() {
+    const thermostatService = this.setServices('thermostat', this.platform.Service.Thermostat);
 
     const {
       CurrentHeatingCoolingState,
@@ -17,8 +23,6 @@ export class AirConditionerAccessory extends BaseAccessory {
       CurrentRelativeHumidity,
       TargetRelativeHumidity,
     } = this.Characteristic;
-
-    const thermostatService = this.services.thermostat;
 
     //#region Thermostat
     thermostatService
@@ -90,11 +94,11 @@ export class AirConditionerAccessory extends BaseAccessory {
   }
 
   private get hasIndoorHumidity() {
-    return Boolean(this.devDigitalModelPropertiesMap.indoorHumidity);
+    return Boolean(this.deviceProperties.indoorHumidity);
   }
 
   private get hasTargetHumidity() {
-    return Boolean(this.devDigitalModelPropertiesMap.targetHumidity);
+    return Boolean(this.deviceProperties.targetHumidity);
   }
 
   private get onOffStatus() {
@@ -112,7 +116,7 @@ export class AirConditionerAccessory extends BaseAccessory {
   private get targetTemperatureProps():
     | Pick<CharacteristicProps, 'minValue' | 'maxValue' | 'minStep' | 'validValueRanges'>
     | undefined {
-    const valueRange = this.devDigitalModelPropertiesMap.targetTemp?.valueRange;
+    const valueRange = this.deviceProperties.targetTemp?.valueRange;
     if (!valueRange || valueRange.type !== 'STEP' || !valueRange.dataStep) {
       return undefined;
     }
@@ -132,10 +136,10 @@ export class AirConditionerAccessory extends BaseAccessory {
     if (!this.onOffStatus) {
       return CurrentHeatingCoolingState.OFF;
     }
-    switch (this.devDigitalModelPropertiesMap.operationMode?.value) {
-      case '1':
+    switch (this.deviceProperties.operationMode?.value) {
+      case HaierAcOperationMode.COOL:
         return CurrentHeatingCoolingState.COOL;
-      case '4':
+      case HaierAcOperationMode.HEAT:
         return CurrentHeatingCoolingState.HEAT;
       default: {
         if (this.currentTemperature ?? 0 > (this.targetTemperature ?? 0)) {
@@ -151,10 +155,10 @@ export class AirConditionerAccessory extends BaseAccessory {
     if (!this.onOffStatus) {
       return TargetHeatingCoolingState.OFF;
     }
-    switch (this.devDigitalModelPropertiesMap.operationMode?.value) {
-      case '1':
+    switch (this.deviceProperties.operationMode?.value) {
+      case HaierAcOperationMode.COOL:
         return TargetHeatingCoolingState.COOL;
-      case '4':
+      case HaierAcOperationMode.HEAT:
         return TargetHeatingCoolingState.HEAT;
       default:
         return TargetHeatingCoolingState.AUTO;
@@ -167,9 +171,9 @@ export class AirConditionerAccessory extends BaseAccessory {
       return this.sendCommands({ onOffStatus: 'false' });
     }
     const modeMap = {
-      [TargetHeatingCoolingState.AUTO]: '0',
-      [TargetHeatingCoolingState.COOL]: '1',
-      [TargetHeatingCoolingState.HEAT]: '4',
+      [TargetHeatingCoolingState.AUTO]: HaierAcOperationMode.AUTO,
+      [TargetHeatingCoolingState.COOL]: HaierAcOperationMode.COOL,
+      [TargetHeatingCoolingState.HEAT]: HaierAcOperationMode.HEAT,
     };
     const operationMode = modeMap[value as keyof typeof modeMap];
     if (operationMode) {
@@ -197,7 +201,7 @@ export class AirConditionerAccessory extends BaseAccessory {
   }
 
   getTemperatureDisplayUnits() {
-    if (this.devDigitalModelPropertiesMap.tempUnit?.value === '2') {
+    if (this.deviceProperties.tempUnit?.value === '2') {
       return this.Characteristic.TemperatureDisplayUnits.FAHRENHEIT;
     }
     return this.Characteristic.TemperatureDisplayUnits.CELSIUS;

@@ -1,7 +1,7 @@
 import { PLATFORM_NAME, PLUGIN_NAME, generateCacheDir } from '@shared';
 import { type DeviceInfo, HaierIoT } from 'haier-iot';
-import type { API, Characteristic, DynamicPlatformPlugin, Logger, PlatformConfig, Service } from 'homebridge';
-import { AirConditionerAccessory, FridgeAccessory, HotWaterAccessory } from './accessories';
+import type { API, Characteristic, DynamicPlatformPlugin, Logger, Service } from 'homebridge';
+import { AirConditionerAccessory, FridgeAccessory, WaterHeaterAccessory } from './accessories';
 import type { HaierPlatformAccessory, HaierPlatformAccessoryContext, HaierPlatformConfig } from './types';
 
 export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
@@ -128,7 +128,7 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
       case '空调':
         return AirConditionerAccessory;
       case '热水卫浴':
-        return HotWaterAccessory;
+        return WaterHeaterAccessory;
       case '冰冷':
         return FridgeAccessory;
       default:

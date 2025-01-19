@@ -23,8 +23,6 @@ const serviceConfig = {
 
 export class FridgeAccessory extends BaseAccessory {
   async init() {
-    await this.getDevDigitalModel();
-
     Object.entries(serviceConfig).forEach(([serviceName, { displayName, currentTempKey, targetTempKey }]) => {
       this.createTemperatureService(serviceName, displayName, currentTempKey, targetTempKey);
     });
@@ -49,8 +47,8 @@ export class FridgeAccessory extends BaseAccessory {
       const service = this.services[serviceName];
       if (!service) return;
 
-      const currentTempProperty = this.devDigitalModelPropertiesMap[currentTempKey];
-      const targetTempProperty = this.devDigitalModelPropertiesMap[targetTempKey];
+      const currentTempProperty = this.deviceProperties[currentTempKey];
+      const targetTempProperty = this.deviceProperties[targetTempKey];
       if (!currentTempProperty || !targetTempProperty) return;
       const temperatureMap = this.extractCelsiusDataMapping(targetTempProperty.valueRange);
 
@@ -64,8 +62,8 @@ export class FridgeAccessory extends BaseAccessory {
   }
 
   createTemperatureService(serviceName: string, displayName: string, currentTempKey: string, targetTempKey: string) {
-    const currentTempProperty = this.devDigitalModelPropertiesMap[currentTempKey];
-    const targetTempProperty = this.devDigitalModelPropertiesMap[targetTempKey];
+    const currentTempProperty = this.deviceProperties[currentTempKey];
+    const targetTempProperty = this.deviceProperties[targetTempKey];
 
     if (!currentTempProperty || !targetTempProperty) return;
     this.setServices(serviceName, this.platform.Service.HeaterCooler, displayName);
