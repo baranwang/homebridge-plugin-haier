@@ -1,5 +1,11 @@
 # homebridge-plugin-haier
 
+## 2.6.0
+
+### Minor Changes
+
+- 7da1fb1: 添加禁用设备功能以增强设备管理
+
 ## 2.5.0
 
 ### Minor Changes
