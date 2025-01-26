@@ -22,6 +22,8 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
   ) {
     this.log.debug('平台初始化完成', this.config.name);
 
+    this.accessories = [];
+
     this.api.on('didFinishLaunching', async () => {
       const { username, password } = this.config;
       if (!username || !password) {
@@ -45,23 +47,24 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
   }
 
   configureAccessory(accessory: HaierPlatformAccessory) {
+    const { disabledDevices = [] } = this.config;
     this.log.info('从缓存加载附件：', accessory.displayName);
+    if (disabledDevices.includes(accessory.context.deviceInfo.baseInfo.deviceId)) {
+      this.log.info('设备', accessory.displayName, '已被禁用');
+      return;
+    }
     this.accessories.push(accessory);
   }
 
   discoverDevices() {
-    const { familyId, disabledDevices = [] } = this.config;
+    const { familyId } = this.config;
     if (!familyId) {
       this.log.error('请在 config.json 中配置 familyId');
       return;
     }
 
     this.haierIoT.getDevicesByFamilyId(familyId).then(async (devices) => {
-      const resp = await Promise.allSettled(
-        devices
-          .filter((device) => !disabledDevices.includes(device.baseInfo.deviceId))
-          .map((device) => this.handleDevice(device)),
-      );
+      const resp = await Promise.allSettled(devices.map((device) => this.handleDevice(device)));
       const deviceIds = resp
         .filter((item) => item.status === 'fulfilled')
         .map((item) => item.value)
@@ -73,6 +76,13 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
   }
 
   private async handleDevice(device: DeviceInfo) {
+    const { disabledDevices = [] } = this.config;
+
+    if (disabledDevices.includes(device.baseInfo.deviceId)) {
+      this.log.info('设备', device.baseInfo.deviceName, '已被禁用');
+      return;
+    }
+
     if (this.isDeviceIneligible(device)) {
       return;
     }
