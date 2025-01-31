@@ -1,7 +1,7 @@
 {
   "name": "homebridge-plugin-haier",
   "displayName": "Haier",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "海尔智家 Homebridge 插件",
   "type": "module",
   "exports": {
