@@ -1,1 +1,1 @@
-/// <reference path="../node_modules/@homebridge/plugin-ui-utils/dist/ui.interface.d.ts" />
+/// <reference types="@homebridge/plugin-ui-utils/ui.interface" />

@@ -54,7 +54,7 @@
     "海尔"
   ],
   "dependencies": {
-    "@homebridge/plugin-ui-utils": "^2.0.0",
+    "@homebridge/plugin-ui-utils": "^2.0.1",
     "haier-iot": "1.2.1"
   },
   "devDependencies": {

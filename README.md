@@ -25,7 +25,6 @@
   "username": "你的海尔账号",
   "password": "你的海尔密码",
   "familyId": "你的家庭 ID",
-  "deviceId": "你的设备 ID",
   "disabledDevices": [], // 禁用的设备 ID
   "customConfig": {
     "hotWater": {
