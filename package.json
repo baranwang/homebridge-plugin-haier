@@ -55,7 +55,7 @@
   ],
   "dependencies": {
     "@homebridge/plugin-ui-utils": "^2.0.1",
-    "haier-iot": "1.2.2"
+    "haier-iot": "1.2.3"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.2",
