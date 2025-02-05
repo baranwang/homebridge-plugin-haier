@@ -13,8 +13,6 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
 
   public haierIoT!: HaierIoT;
 
-  private discoveryInterval?: NodeJS.Timeout;
-
   constructor(
     public readonly log: Logger,
     public readonly config: HaierPlatformConfig,
@@ -38,11 +36,10 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
       });
       await this.haierIoT.connect();
       this.discoverDevices();
-      this.discoveryInterval = setInterval(() => this.discoverDevices(), 10 * 60 * 1000);
     });
 
     this.api.on('shutdown', () => {
-      this.discoveryInterval && clearInterval(this.discoveryInterval);
+      this.log.info('Homebridge 即将关闭，断开连接');
     });
   }
 
