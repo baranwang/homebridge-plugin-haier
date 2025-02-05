@@ -1,5 +1,11 @@
 # homebridge-plugin-haier
 
+## 2.6.2
+
+### Patch Changes
+
+- 4d3b93f: 更新 haier-iot 版本至 1.2.2，移除不必要的发现间隔逻辑
+
 ## 2.6.1
 
 ### Patch Changes
