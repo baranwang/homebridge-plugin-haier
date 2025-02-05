@@ -1,5 +1,11 @@
 # homebridge-plugin-haier
 
+## 2.6.3
+
+### Patch Changes
+
+- 43c0d32: bump haier-iot version
+
 ## 2.6.2
 
 ### Patch Changes
