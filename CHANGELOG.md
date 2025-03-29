@@ -1,5 +1,11 @@
 # homebridge-plugin-haier
 
+## 2.6.4
+
+### Patch Changes
+
+- b32a6bb: 添加 homebridge 作为 peerDependencies
+
 ## 2.6.3
 
 ### Patch Changes
