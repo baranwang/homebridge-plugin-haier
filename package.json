@@ -53,9 +53,6 @@
     "haier",
     "海尔"
   ],
-  "peerDependencies": {
-    "homebridge": "^1.8.0 || ^2.0.0-beta.0"
-  },
   "dependencies": {
     "@homebridge/plugin-ui-utils": "^2.0.1",
     "haier-iot": "1.2.3"
