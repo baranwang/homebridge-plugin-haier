@@ -89,7 +89,9 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
       this.log.warn(
         '设备',
         device.baseInfo.deviceName,
-        '暂不支持，可提交 issue 申请支持',
+        '暂不支持',
+        device.extendedInfo.categoryGrouping,
+        '，可提交 issue 申请支持',
         require('../package.json').bugs.url,
       );
       return;
@@ -132,11 +134,11 @@ export class HaierHomebridgePlatform implements DynamicPlatformPlugin {
 
   private getAccessoryClass(deviceInfo: DeviceInfo) {
     switch (deviceInfo.extendedInfo.categoryGrouping) {
-      case '空调':
+      case '空气环境':
         return AirConditionerAccessory;
       case '热水卫浴':
         return WaterHeaterAccessory;
-      case '冰冷':
+      case '冰箱冷储':
         return FridgeAccessory;
       default:
         return undefined;
