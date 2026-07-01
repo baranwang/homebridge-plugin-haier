@@ -1,5 +1,11 @@
 # homebridge-plugin-haier
 
+## 2.6.5
+
+### Patch Changes
+
+- 5c479b6: 适配海尔 2026.06 API 更新，`categoryGrouping` 类别名称调整：`空调` 更名为 `空气环境`，`冰冷` 更名为 `冰箱冷储`
+
 ## 2.6.4
 
 ### Patch Changes
