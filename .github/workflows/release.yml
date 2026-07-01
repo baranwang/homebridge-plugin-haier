@@ -22,6 +22,8 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
 
+      - run: npm install -g npm@11
+
       - run: npm ci
 
       - uses: changesets/action@v1
@@ -32,3 +34,4 @@ jobs:
           commit: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
